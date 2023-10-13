@@ -1,22 +1,19 @@
 package entity
 
-import "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+import (
+	"errors"
 
-const (
-	TransactionCardIsRequired     = errors.Validation("transaction card is required")
-	TransactionPurchaseIsRequired = errors.Validation("transaction purchase is required")
-	TransactionStoreIsRequired    = errors.Validation("transaction store is required")
-	TransactionAcquirerIsRequired = errors.Validation("transaction acquirer is required")
+	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
 type Transaction struct {
-	Card     *Card
-	Purchase *Purchase
-	Store    *Store
-	Acquirer string
+	Card     Card
+	Purchase Purchase
+	Store    Store
+	Acquirer Acquirer
 }
 
-func NewTransaction(card *Card, purchase *Purchase, store *Store, acquirer string) *Transaction {
+func NewTransaction(card Card, purchase Purchase, store Store, acquirer Acquirer) *Transaction {
 	return &Transaction{
 		Card:     card,
 		Purchase: purchase,
@@ -26,32 +23,38 @@ func NewTransaction(card *Card, purchase *Purchase, store *Store, acquirer strin
 }
 
 func (t *Transaction) Validate() error {
-	if t.Card == nil {
-		return TransactionCardIsRequired
-	}
+	errs := make([]error, 0)
 
 	if err := t.Card.Validate(); err != nil {
-		return err
-	}
-
-	if t.Purchase == nil {
-		return TransactionPurchaseIsRequired
+		var v *app_error.Validation
+		if errors.As(err, &v) {
+			errs = append(errs, v.Unwrap()...)
+		}
 	}
 
 	if err := t.Purchase.Validate(); err != nil {
-		return err
-	}
-
-	if t.Store == nil {
-		return TransactionStoreIsRequired
+		var v *app_error.Validation
+		if errors.As(err, &v) {
+			errs = append(errs, v.Unwrap()...)
+		}
 	}
 
 	if err := t.Store.Validate(); err != nil {
-		return err
+		var v *app_error.Validation
+		if errors.As(err, &v) {
+			errs = append(errs, v.Unwrap()...)
+		}
 	}
 
-	if t.Acquirer == "" {
-		return TransactionAcquirerIsRequired
+	if err := t.Acquirer.Validate(); err != nil {
+		var v *app_error.Validation
+		if errors.As(err, &v) {
+			errs = append(errs, v.Unwrap()...)
+		}
+	}
+
+	if len(errs) > 0 {
+		return app_error.NewValidation(errs...)
 	}
 
 	return nil

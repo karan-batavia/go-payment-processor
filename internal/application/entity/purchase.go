@@ -1,13 +1,17 @@
 package entity
 
-import "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+import (
+	"errors"
 
-const (
-	PurchaseItemsIsRequiredErr = errors.Validation("purchase items is required")
+	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+)
 
-	PurchaseValueIsInvalidErr        = errors.Validation("purchase value is invalid")
-	PurchaseItemsAreInvalidErr       = errors.Validation("purchase items are invalid")
-	PurchaseInstallmentsIsInvalidErr = errors.Validation("purchase installments is invalid")
+var (
+	ErrorPurchaseItemsIsRequired = errors.New("purchase items is required")
+
+	ErrorPurchaseValueIsInvalid        = errors.New("purchase value is invalid")
+	ErrorPurchaseItemsIsInvalid        = errors.New("purchase items is invalid")
+	ErrorPurchaseInstallmentsIsInvalid = errors.New("purchase installments is invalid")
 )
 
 type Purchase struct {
@@ -25,22 +29,29 @@ func NewPurchase(value float64, items []string, installments int) *Purchase {
 }
 
 func (p *Purchase) Validate() error {
+	errs := make([]error, 0)
+
 	if p.Value <= 0 {
-		return PurchaseValueIsInvalidErr
+		errs = append(errs, ErrorPurchaseValueIsInvalid)
 	}
 
 	if p.Items == nil || len(p.Items) == 0 {
-		return PurchaseItemsIsRequiredErr
-	}
-
-	for _, item := range p.Items {
-		if item == "" {
-			return PurchaseItemsAreInvalidErr
+		errs = append(errs, ErrorPurchaseItemsIsRequired)
+	} else {
+		for _, item := range p.Items {
+			if item == "" {
+				errs = append(errs, ErrorPurchaseItemsIsInvalid)
+				break
+			}
 		}
 	}
 
 	if p.Installments <= 0 {
-		return PurchaseInstallmentsIsInvalidErr
+		errs = append(errs, ErrorPurchaseInstallmentsIsInvalid)
+	}
+
+	if len(errs) > 0 {
+		return app_error.NewValidation(errs...)
 	}
 
 	return nil

@@ -1,0 +1,13 @@
+disable-version-string: True
+with-expecter: True
+dir: "test/mocks/"
+outpkg: "mocks"
+filename: "{{.InterfaceName}}Mock.go"
+mockname: "{{.InterfaceName}}Mock"
+packages:
+  github.com/sesaquecruz/go-payment-processor/internal/application/repository:
+    config:
+      all: True
+  github.com/sesaquecruz/go-payment-processor/internal/application/service:
+    config:
+      all: True

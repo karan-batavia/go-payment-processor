@@ -3,9 +3,11 @@ package entity
 import (
 	"errors"
 	"testing"
+
+	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
-func TestCreateCard(t *testing.T) {
+func TestCardFactory(t *testing.T) {
 	card := NewCard("Token", "Holder", "Expiration", "Brand")
 
 	if card == nil {
@@ -15,29 +17,33 @@ func TestCreateCard(t *testing.T) {
 
 	if card.Token != "Token" {
 		t.Error("card token should be Token")
+		return
 	}
 
 	if card.Holder != "Holder" {
 		t.Error("card holder should be Holder")
+		return
 	}
 
 	if card.Expiration != "Expiration" {
 		t.Error("card expiration should be Expiration")
+		return
 	}
 
 	if card.Brand != "Brand" {
 		t.Error("card brand should be Brand")
+		return
 	}
 }
 
-func TestCardFields(t *testing.T) {
+func TestCardValidator(t *testing.T) {
 	testCases := []struct {
 		Test       string
 		Token      string
 		Holder     string
 		Expiration string
 		Brand      string
-		err        error
+		errs       []error
 	}{
 		{
 			"token is empty",
@@ -45,7 +51,7 @@ func TestCardFields(t *testing.T) {
 			"Holder",
 			"Expiration",
 			"Brand",
-			CardTokenIsRequiredErr,
+			[]error{ErrorCardTokenIsRequired},
 		},
 		{
 			"holder is empty",
@@ -53,7 +59,7 @@ func TestCardFields(t *testing.T) {
 			"",
 			"Expiration",
 			"Brand",
-			CardHolderIsRequiredErr,
+			[]error{ErrorCardHolderIsRequired},
 		},
 		{
 			"expiration is empty",
@@ -61,7 +67,7 @@ func TestCardFields(t *testing.T) {
 			"Holder",
 			"",
 			"Brand",
-			CardExpirationIsRequiredErr,
+			[]error{ErrorCardExpirationIsRequired},
 		},
 		{
 			"brand is empty",
@@ -69,7 +75,20 @@ func TestCardFields(t *testing.T) {
 			"Holder",
 			"Expiration",
 			"",
-			CardBrandIsRequiredErr,
+			[]error{ErrorCardBrandIsRequired},
+		},
+		{
+			"all fields are invalid",
+			"",
+			"",
+			"",
+			"",
+			[]error{
+				ErrorCardTokenIsRequired,
+				ErrorCardHolderIsRequired,
+				ErrorCardExpirationIsRequired,
+				ErrorCardBrandIsRequired,
+			},
 		},
 		{
 			"all fields are valid",
@@ -84,8 +103,34 @@ func TestCardFields(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Test, func(t *testing.T) {
 			err := NewCard(tc.Token, tc.Holder, tc.Expiration, tc.Brand).Validate()
-			if !errors.Is(err, tc.err) {
-				t.Errorf("expected: %v, got: %v", tc.err, err)
+
+			if tc.errs == nil && err == nil {
+				return
+			}
+
+			if tc.errs == nil && err != nil {
+				t.Errorf("expected: %v, got: %v", tc.errs, err)
+				return
+			}
+
+			var v *app_error.Validation
+			if !errors.As(err, &v) {
+				t.Errorf("expected a validation error, got: %v", err)
+				return
+			}
+
+			errs := v.Unwrap()
+
+			if len(tc.errs) != len(errs) {
+				t.Errorf("expected %d errors, got: %d errors", len(tc.errs), len(errs))
+				return
+			}
+
+			for i, err := range tc.errs {
+				if !errors.Is(err, errs[i]) {
+					t.Errorf("expected: %v, got: %v", err, errs[i])
+					return
+				}
 			}
 		})
 	}

@@ -1,7 +1,19 @@
 package errors
 
-type NotFound string
+type NotFound struct {
+	err error
+}
 
-func (e NotFound) Error() string {
-	return string(e)
+func NewNotFound(err error) *NotFound {
+	return &NotFound{
+		err: err,
+	}
+}
+
+func (e *NotFound) Error() string {
+	return e.err.Error()
+}
+
+func (e *NotFound) Unwrap() error {
+	return e.err
 }

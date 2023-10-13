@@ -1,11 +1,15 @@
 package entity
 
-import "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+import (
+	"errors"
 
-const (
-	StoreIdentificationIsRequiredErr = errors.Validation("store identification is requred")
-	StoreAddressIsRequiredErr        = errors.Validation("store address is required")
-	StoreCepIsRequiredErr            = errors.Validation("store cep is required")
+	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+)
+
+var (
+	ErrorStoreIdentificationIsRequired = errors.New("store identification is requred")
+	ErrorStoreAddressIsRequired        = errors.New("store address is required")
+	ErrorStoreCepIsRequired            = errors.New("store cep is required")
 )
 
 type Store struct {
@@ -23,16 +27,22 @@ func NewStore(identification string, address string, cep string) *Store {
 }
 
 func (s *Store) Validate() error {
+	errs := make([]error, 0)
+
 	if s.Identification == "" {
-		return StoreIdentificationIsRequiredErr
+		errs = append(errs, ErrorStoreIdentificationIsRequired)
 	}
 
 	if s.Address == "" {
-		return StoreAddressIsRequiredErr
+		errs = append(errs, ErrorStoreAddressIsRequired)
 	}
 
 	if s.Cep == "" {
-		return StoreCepIsRequiredErr
+		errs = append(errs, ErrorStoreCepIsRequired)
+	}
+
+	if len(errs) > 0 {
+		return app_error.NewValidation(errs...)
 	}
 
 	return nil

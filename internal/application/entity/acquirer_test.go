@@ -7,41 +7,41 @@ import (
 	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
-func TestPaymentFactory(t *testing.T) {
-	payment := NewPayment("Status")
+func TestAcquirerFactory(t *testing.T) {
+	acquirer := NewAcquirer("Acquirer")
 
-	if payment == nil {
-		t.Error("payment should have been created")
+	if acquirer == nil {
+		t.Error("acquirer should have been created")
 		return
 	}
 
-	if payment.Status != "Status" {
-		t.Error("payment status should be Status")
+	if acquirer.Name != "Acquirer" {
+		t.Error("acquirer name should be Acquirer")
 		return
 	}
 }
 
-func TestPaymentValidator(t *testing.T) {
+func TestAcquirerValidator(t *testing.T) {
 	testCases := []struct {
-		Test   string
-		Status string
-		errs   []error
+		Test string
+		Name string
+		errs []error
 	}{
 		{
-			"status is empty",
+			"name is emtpy",
 			"",
-			[]error{ErrorPaymentStatusIsRequired},
+			[]error{ErrorAcquirerNameIsRequired},
 		},
 		{
 			"all fields are valid",
-			"Status",
+			"Acquirer",
 			nil,
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.Test, func(t *testing.T) {
-			err := NewPayment(tc.Status).Validate()
+		t.Run(tc.Name, func(t *testing.T) {
+			err := NewAcquirer(tc.Name).Validate()
 
 			if tc.errs == nil && err == nil {
 				return

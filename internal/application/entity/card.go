@@ -1,12 +1,16 @@
 package entity
 
-import "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+import (
+	"errors"
 
-const (
-	CardTokenIsRequiredErr      = errors.Validation("card token is required")
-	CardHolderIsRequiredErr     = errors.Validation("card holder is required")
-	CardExpirationIsRequiredErr = errors.Validation("card expiration is required")
-	CardBrandIsRequiredErr      = errors.Validation("card brand is required")
+	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+)
+
+var (
+	ErrorCardTokenIsRequired      = errors.New("card token is required")
+	ErrorCardHolderIsRequired     = errors.New("card holder is required")
+	ErrorCardExpirationIsRequired = errors.New("card expiration is required")
+	ErrorCardBrandIsRequired      = errors.New("card brand is required")
 )
 
 type Card struct {
@@ -26,20 +30,26 @@ func NewCard(token string, holder string, expiration string, brand string) *Card
 }
 
 func (c *Card) Validate() error {
+	errs := make([]error, 0)
+
 	if c.Token == "" {
-		return CardTokenIsRequiredErr
+		errs = append(errs, ErrorCardTokenIsRequired)
 	}
 
 	if c.Holder == "" {
-		return CardHolderIsRequiredErr
+		errs = append(errs, ErrorCardHolderIsRequired)
 	}
 
 	if c.Expiration == "" {
-		return CardExpirationIsRequiredErr
+		errs = append(errs, ErrorCardExpirationIsRequired)
 	}
 
 	if c.Brand == "" {
-		return CardBrandIsRequiredErr
+		errs = append(errs, ErrorCardBrandIsRequired)
+	}
+
+	if len(errs) > 0 {
+		return app_error.NewValidation(errs...)
 	}
 
 	return nil

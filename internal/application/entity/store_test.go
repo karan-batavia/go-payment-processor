@@ -3,6 +3,8 @@ package entity
 import (
 	"errors"
 	"testing"
+
+	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
 func TestCreateStore(t *testing.T) {
@@ -15,45 +17,59 @@ func TestCreateStore(t *testing.T) {
 
 	if store.Identification != "Identification" {
 		t.Error("store identification should be Identification")
+		return
 	}
 
 	if store.Address != "Address" {
 		t.Error("store address should be Address")
+		return
 	}
 
 	if store.Cep != "Cep" {
 		t.Error("store cep should be Cep")
+		return
 	}
 }
 
-func TestStoreFields(t *testing.T) {
+func TestStoreValidator(t *testing.T) {
 	testCase := []struct {
 		Test           string
 		Identification string
 		Address        string
 		Cep            string
-		err            error
+		errs           []error
 	}{
 		{
 			"identification is empty",
 			"",
 			"Address",
 			"Cep",
-			StoreIdentificationIsRequiredErr,
+			[]error{ErrorStoreIdentificationIsRequired},
 		},
 		{
 			"address is empty",
 			"Identification",
 			"",
-			"",
-			StoreAddressIsRequiredErr,
+			"Cep",
+			[]error{ErrorStoreAddressIsRequired},
 		},
 		{
 			"cep is empty",
 			"Identification",
 			"Address",
 			"",
-			StoreCepIsRequiredErr,
+			[]error{ErrorStoreCepIsRequired},
+		},
+		{
+			"all fields are invalid",
+			"",
+			"",
+			"",
+			[]error{
+				ErrorStoreIdentificationIsRequired,
+				ErrorStoreAddressIsRequired,
+				ErrorStoreCepIsRequired,
+			},
 		},
 		{
 			"all fields are valid",
@@ -67,8 +83,34 @@ func TestStoreFields(t *testing.T) {
 	for _, tc := range testCase {
 		t.Run(tc.Test, func(t *testing.T) {
 			err := NewStore(tc.Identification, tc.Address, tc.Cep).Validate()
-			if !errors.Is(err, tc.err) {
-				t.Errorf("expected: %v, got: %v", tc.err, err)
+
+			if tc.errs == nil && err == nil {
+				return
+			}
+
+			if tc.errs == nil && err != nil {
+				t.Errorf("expected: %v, got: %v", tc.errs, err)
+				return
+			}
+
+			var v *app_error.Validation
+			if !errors.As(err, &v) {
+				t.Errorf("expected a validation error, got: %v", err)
+				return
+			}
+
+			errs := v.Unwrap()
+
+			if len(tc.errs) != len(errs) {
+				t.Errorf("expected %d errors, got: %d errors", len(tc.errs), len(errs))
+				return
+			}
+
+			for i, err := range tc.errs {
+				if !errors.Is(err, errs[i]) {
+					t.Errorf("expected: %v, got: %v", err, errs[i])
+					return
+				}
 			}
 		})
 	}

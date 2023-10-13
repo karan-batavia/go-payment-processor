@@ -1,9 +1,13 @@
 package entity
 
-import "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+import (
+	"errors"
 
-const (
-	PaymentStatusIsRequiredErr = errors.Validation("payment status is required")
+	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+)
+
+var (
+	ErrorPaymentStatusIsRequired = errors.New("payment status is required")
 )
 
 type Payment struct {
@@ -17,8 +21,14 @@ func NewPayment(status string) *Payment {
 }
 
 func (p *Payment) Validate() error {
+	errs := make([]error, 0)
+
 	if p.Status == "" {
-		return PaymentStatusIsRequiredErr
+		errs = append(errs, ErrorPaymentStatusIsRequired)
+	}
+
+	if len(errs) > 0 {
+		return app_error.NewValidation(errs...)
 	}
 
 	return nil

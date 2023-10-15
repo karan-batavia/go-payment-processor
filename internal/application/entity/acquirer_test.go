@@ -1,24 +1,17 @@
 package entity
 
 import (
-	"errors"
 	"testing"
 
-	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAcquirerFactory(t *testing.T) {
 	acquirer := NewAcquirer("Acquirer")
-
-	if acquirer == nil {
-		t.Error("acquirer should have been created")
-		return
-	}
-
-	if acquirer.Name != "Acquirer" {
-		t.Error("acquirer name should be Acquirer")
-		return
-	}
+	assert.NotNil(t, acquirer)
+	assert.Equal(t, acquirer.Name, "Acquirer")
 }
 
 func TestAcquirerValidator(t *testing.T) {
@@ -42,34 +35,18 @@ func TestAcquirerValidator(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			err := NewAcquirer(tc.Name).Validate()
-
 			if tc.errs == nil && err == nil {
 				return
 			}
 
-			if tc.errs == nil && err != nil {
-				t.Errorf("expected: %v, got: %v", tc.errs, err)
-				return
-			}
-
-			var v *app_error.Validation
-			if !errors.As(err, &v) {
-				t.Errorf("expected a validation error, got: %v", err)
-				return
-			}
+			var v *app_errors.Validation
+			assert.ErrorAs(t, err, &v)
 
 			errs := v.Unwrap()
-
-			if len(tc.errs) != len(errs) {
-				t.Errorf("expected %d errors, got: %d errors", len(tc.errs), len(errs))
-				return
-			}
+			assert.Equal(t, len(tc.errs), len(errs))
 
 			for i, err := range tc.errs {
-				if !errors.Is(err, errs[i]) {
-					t.Errorf("expected: %v, got: %v", err, errs[i])
-					return
-				}
+				assert.ErrorIs(t, err, errs[i])
 			}
 		})
 	}

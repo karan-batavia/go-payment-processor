@@ -3,7 +3,7 @@ package entity
 import (
 	"errors"
 
-	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
 var (
@@ -49,7 +49,7 @@ func (c *Card) Validate() error {
 	}
 
 	if len(errs) > 0 {
-		return app_error.NewValidation(errs...)
+		return app_errors.NewValidation(errs...)
 	}
 
 	return nil

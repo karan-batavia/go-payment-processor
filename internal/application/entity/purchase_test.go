@@ -1,36 +1,21 @@
 package entity
 
 import (
-	"errors"
-	"reflect"
 	"testing"
 
-	app_error "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPurchaseFactory(t *testing.T) {
 	items := []string{"Item 1", "Item 2"}
+
 	purchase := NewPurchase(9.99, items, 5)
-
-	if purchase == nil {
-		t.Error("purchase should have been created")
-		return
-	}
-
-	if purchase.Value != 9.99 {
-		t.Error("purchase value should be 9.99")
-		return
-	}
-
-	if !reflect.DeepEqual(purchase.Items, items) {
-		t.Errorf("purchase items should be %v", items)
-		return
-	}
-
-	if purchase.Installments != 5 {
-		t.Error("purchase installments shoudl be 5")
-		return
-	}
+	assert.NotNil(t, purchase)
+	assert.Equal(t, purchase.Value, 9.99)
+	assert.EqualValues(t, purchase.Items, items)
+	assert.Equal(t, purchase.Installments, 5)
 }
 
 func TestPurchaseValidator(t *testing.T) {
@@ -113,34 +98,18 @@ func TestPurchaseValidator(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Test, func(t *testing.T) {
 			err := NewPurchase(tc.Value, tc.Items, tc.Installments).Validate()
-
 			if tc.errs == nil && err == nil {
 				return
 			}
 
-			if tc.errs == nil && err != nil {
-				t.Errorf("expected: %v, got: %v", tc.errs, err)
-				return
-			}
-
-			var v *app_error.Validation
-			if !errors.As(err, &v) {
-				t.Errorf("expected a validation error, got: %v", err)
-				return
-			}
+			var v *app_errors.Validation
+			assert.ErrorAs(t, err, &v)
 
 			errs := v.Unwrap()
-
-			if len(tc.errs) != len(errs) {
-				t.Errorf("expected %d errors, got: %d errors", len(tc.errs), len(errs))
-				return
-			}
+			assert.Equal(t, len(tc.errs), len(errs))
 
 			for i, err := range tc.errs {
-				if !errors.Is(err, errs[i]) {
-					t.Errorf("expected: %v, got: %v", err, errs[i])
-					return
-				}
+				assert.ErrorIs(t, err, errs[i])
 			}
 		})
 	}

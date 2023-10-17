@@ -1,16 +1,14 @@
 package entity
 
 import (
-	"errors"
-
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
-var (
-	ErrorCardTokenIsRequired      = errors.New("card token is required")
-	ErrorCardHolderIsRequired     = errors.New("card holder is required")
-	ErrorCardExpirationIsRequired = errors.New("card expiration is required")
-	ErrorCardBrandIsRequired      = errors.New("card brand is required")
+const (
+	ErrorCardTokenIsRequired      = app_errors.Error("card token is required")
+	ErrorCardHolderIsRequired     = app_errors.Error("card holder is required")
+	ErrorCardExpirationIsRequired = app_errors.Error("card expiration is required")
+	ErrorCardBrandIsRequired      = app_errors.Error("card brand is required")
 )
 
 type Card struct {

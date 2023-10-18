@@ -1,13 +1,11 @@
 package entity
 
 import (
-	"errors"
-
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
-var (
-	ErrorAcquirerNameIsRequired = errors.New("acquirer name is required")
+const (
+	ErrorAcquirerNameIsRequired = app_errors.Error("acquirer name is required")
 )
 
 type Acquirer struct {

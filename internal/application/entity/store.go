@@ -1,15 +1,13 @@
 package entity
 
 import (
-	"errors"
-
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
-var (
-	ErrorStoreIdentificationIsRequired = errors.New("store identification is requred")
-	ErrorStoreAddressIsRequired        = errors.New("store address is required")
-	ErrorStoreCepIsRequired            = errors.New("store cep is required")
+const (
+	ErrorStoreIdentificationIsRequired = app_errors.Error("store identification is requred")
+	ErrorStoreAddressIsRequired        = app_errors.Error("store address is required")
+	ErrorStoreCepIsRequired            = app_errors.Error("store cep is required")
 )
 
 type Store struct {

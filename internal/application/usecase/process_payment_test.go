@@ -8,8 +8,8 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/application/entity"
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 
-	"github.com/sesaquecruz/go-payment-processor/test/mocks/application/repository"
-	"github.com/sesaquecruz/go-payment-processor/test/mocks/application/service"
+	"github.com/sesaquecruz/go-payment-processor/mocks/application/repository"
+	"github.com/sesaquecruz/go-payment-processor/mocks/application/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

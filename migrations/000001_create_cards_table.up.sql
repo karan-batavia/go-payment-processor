@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS cards (
+	token VARCHAR(100) PRIMARY KEY, 
+	holder VARCHAR(100) NOT NULL, 
+	expiration VARCHAR(10) NOT NULL, 
+	brand VARCHAR (20) NOT NULL
+);

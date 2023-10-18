@@ -1,13 +1,11 @@
 package entity
 
 import (
-	"errors"
-
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
-var (
-	ErrorPaymentStatusIsRequired = errors.New("payment status is required")
+const (
+	ErrorPaymentStatusIsRequired = app_errors.Error("payment status is required")
 )
 
 type Payment struct {

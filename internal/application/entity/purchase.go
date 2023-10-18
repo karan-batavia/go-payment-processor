@@ -1,17 +1,15 @@
 package entity
 
 import (
-	"errors"
-
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 )
 
-var (
-	ErrorPurchaseItemsIsRequired = errors.New("purchase items is required")
+const (
+	ErrorPurchaseItemsIsRequired = app_errors.Error("purchase items is required")
 
-	ErrorPurchaseValueIsInvalid        = errors.New("purchase value is invalid")
-	ErrorPurchaseItemsIsInvalid        = errors.New("purchase items is invalid")
-	ErrorPurchaseInstallmentsIsInvalid = errors.New("purchase installments is invalid")
+	ErrorPurchaseValueIsInvalid        = app_errors.Error("purchase value is invalid")
+	ErrorPurchaseItemsIsInvalid        = app_errors.Error("purchase items is invalid")
+	ErrorPurchaseInstallmentsIsInvalid = app_errors.Error("purchase installments is invalid")
 )
 
 type Purchase struct {

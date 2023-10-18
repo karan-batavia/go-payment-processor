@@ -6,15 +6,15 @@ packages:
   github.com/sesaquecruz/go-payment-processor/internal/application/repository:
     config:
       all: True
-      dir: "test/mocks/application/repository"
+      dir: "mocks/application/repository"
       outpkg: "repository"
   github.com/sesaquecruz/go-payment-processor/internal/application/service:
     config:
       all: True
-      dir: "test/mocks/application/service"
+      dir: "mocks/application/service"
       outpkg: "service"
   github.com/sesaquecruz/go-payment-processor/internal/application/usecase:
     config:
       all: True
-      dir: "test/mocks/application/usecase"
+      dir: "mocks/application/usecase"
       outpkg: "usecase"

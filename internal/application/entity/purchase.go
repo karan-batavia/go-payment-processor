@@ -13,9 +13,9 @@ const (
 )
 
 type Purchase struct {
-	Value        float64
-	Items        []string
-	Installments int
+	Value        float64  `json:"value"`
+	Items        []string `json:"items"`
+	Installments int      `json:"installments"`
 }
 
 func NewPurchase(value float64, items []string, installments int) *Purchase {

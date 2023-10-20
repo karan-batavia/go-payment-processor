@@ -9,7 +9,7 @@ const (
 )
 
 type Payment struct {
-	Status string
+	Status string `json:"status"`
 }
 
 func NewPayment(status string) *Payment {

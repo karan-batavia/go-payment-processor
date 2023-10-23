@@ -11,9 +11,9 @@ const (
 )
 
 type Store struct {
-	Identification string
-	Address        string
-	Cep            string
+	Identification string `json:"identification"`
+	Address        string `json:"address"`
+	Cep            string `json:"cep"`
 }
 
 func NewStore(identification string, address string, cep string) *Store {

@@ -54,7 +54,7 @@ func (p *DefaultProcessPayment) Execute(ctx context.Context, input ProcessPaymen
 		return nil, err
 	}
 
-	payment, err := p.paymentService.Process(ctx, *transaction)
+	payment, err := p.paymentService.Process(ctx, transaction)
 	if err != nil {
 		return nil, err
 	}

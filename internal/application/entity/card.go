@@ -12,10 +12,10 @@ const (
 )
 
 type Card struct {
-	Token      string
-	Holder     string
-	Expiration string
-	Brand      string
+	Token      string `json:"token"`
+	Holder     string `json:"holder"`
+	Expiration string `json:"expiration"`
+	Brand      string `json:"brand"`
 }
 
 func NewCard(token string, holder string, expiration string, brand string) *Card {

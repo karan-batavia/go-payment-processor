@@ -7,10 +7,10 @@ import (
 )
 
 type Transaction struct {
-	Card     Card
-	Purchase Purchase
-	Store    Store
-	Acquirer Acquirer
+	Card     Card     `json:"card"`
+	Purchase Purchase `json:"purchase"`
+	Store    Store    `json:"store"`
+	Acquirer Acquirer `json:"-"`
 }
 
 func NewTransaction(card Card, purchase Purchase, store Store, acquirer Acquirer) *Transaction {

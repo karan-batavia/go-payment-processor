@@ -24,3 +24,12 @@ services:
     volumes:
       - ./migrations:/migrations:ro
     command: [ "-path", "/migrations", "-database",  "postgres://ppapp:ppapp123@postgres:5432/ppdb?sslmode=disable", "-verbose", "up" ]
+
+  acquirer:
+    container_name: acquirer
+    build:
+      context: .
+      dockerfile: ./cmd/acquirer/Dockerfile
+    image: go-acquirer:latest
+    ports:
+      - "6061:6061"

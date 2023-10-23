@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"encoding/json"
 	"testing"
 
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
@@ -116,4 +117,53 @@ func TestTransactionValidator(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMarshalTransaction(t *testing.T) {
+	expected := `
+		{
+			"card": {
+				"token": "Token",
+				"holder": "Holder",
+				"expiration": "Expiration",
+				"brand": "Brand"
+			},
+			"purchase": {
+				"value": 4.99,
+				"items": ["Item 1, Item 2"],
+				"installments": 3
+			},
+			"store": {
+				"identification": "Identification",
+				"address": "Address",
+				"cep": "Cep"
+			}
+		}
+	`
+
+	transaction := Transaction{
+		Card: Card{
+			Token:      "Token",
+			Holder:     "Holder",
+			Expiration: "Expiration",
+			Brand:      "Brand",
+		},
+		Purchase: Purchase{
+			Value:        4.99,
+			Items:        []string{"Item 1, Item 2"},
+			Installments: 3,
+		},
+		Store: Store{
+			Identification: "Identification",
+			Address:        "Address",
+			Cep:            "Cep",
+		},
+		Acquirer: Acquirer{
+			Name: "Name",
+		},
+	}
+
+	actual, err := json.Marshal(&transaction)
+	assert.Nil(t, err)
+	assert.JSONEq(t, expected, string(actual))
 }

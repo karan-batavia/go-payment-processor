@@ -9,7 +9,7 @@ const (
 )
 
 type Acquirer struct {
-	Name string
+	Name string `json:"name"`
 }
 
 func NewAcquirer(name string) *Acquirer {

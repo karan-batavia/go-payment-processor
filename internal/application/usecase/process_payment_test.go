@@ -41,7 +41,7 @@ func TestProcessPaymentWithValidTransaction(t *testing.T) {
 	paymentService.
 		EXPECT().
 		Process(ctx, mock.Anything).
-		Run(func(ctx context.Context, transaction entity.Transaction) {
+		Run(func(ctx context.Context, transaction *entity.Transaction) {
 			assert.Equal(t, card, &transaction.Card)
 			assert.Equal(t, input.PurchaseValue, transaction.Purchase.Value)
 			assert.EqualValues(t, input.PurchaseItens, transaction.Purchase.Items)
@@ -50,14 +50,14 @@ func TestProcessPaymentWithValidTransaction(t *testing.T) {
 			assert.Equal(t, input.StoreAddress, transaction.Store.Address)
 			assert.Equal(t, input.StoreCep, transaction.Store.Cep)
 		}).
-		Return(entity.NewPayment("success"), nil).
+		Return(entity.NewPayment("id", entity.PaymentStatusPaid), nil).
 		Once()
 
 	processPayment := NewDefaultProcessPayment(cardRepository, paymentService)
 
 	output, err := processPayment.Execute(ctx, input)
 	assert.Nil(t, err)
-	assert.Equal(t, output.PaymentStatus, "success")
+	assert.Equal(t, output.PaymentStatus, entity.PaymentStatusPaid)
 }
 
 func TestProcessPaymentWithInvalidCardToken(t *testing.T) {

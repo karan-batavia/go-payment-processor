@@ -9,24 +9,34 @@ import (
 )
 
 func TestPaymentFactory(t *testing.T) {
-	payment := NewPayment("Status")
+	payment := NewPayment("Id", "Status")
 	assert.NotNil(t, payment)
+	assert.Equal(t, payment.Id, "Id")
 	assert.Equal(t, payment.Status, "Status")
 }
 
 func TestPaymentValidator(t *testing.T) {
 	testCases := []struct {
 		Test   string
+		Id     string
 		Status string
 		errs   []error
 	}{
 		{
+			"id is empty",
+			"",
+			"Status",
+			[]error{ErrorPaymentIdIsRequired},
+		},
+		{
 			"status is empty",
+			"Id",
 			"",
 			[]error{ErrorPaymentStatusIsRequired},
 		},
 		{
 			"all fields are valid",
+			"Id",
 			"Status",
 			nil,
 		},
@@ -34,7 +44,7 @@ func TestPaymentValidator(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Test, func(t *testing.T) {
-			err := NewPayment(tc.Status).Validate()
+			err := NewPayment(tc.Id, tc.Status).Validate()
 			if tc.errs == nil && err == nil {
 				return
 			}

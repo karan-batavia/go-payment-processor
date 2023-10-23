@@ -6,9 +6,9 @@ import (
 	"errors"
 
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
-	"github.com/sesaquecruz/go-payment-processor/internal/application/repository"
 
 	"github.com/sesaquecruz/go-payment-processor/internal/application/entity"
+	"github.com/sesaquecruz/go-payment-processor/internal/application/repository"
 )
 
 type PostgresCardRepository struct {

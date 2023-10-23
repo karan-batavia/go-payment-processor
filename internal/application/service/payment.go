@@ -7,5 +7,5 @@ import (
 )
 
 type Payment interface {
-	Process(ctx context.Context, transaction entity.Transaction) (*entity.Payment, error)
+	Process(ctx context.Context, transaction *entity.Transaction) (*entity.Payment, error)
 }

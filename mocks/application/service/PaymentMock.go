@@ -23,15 +23,15 @@ func (_m *PaymentMock) EXPECT() *PaymentMock_Expecter {
 }
 
 // Process provides a mock function with given fields: ctx, transaction
-func (_m *PaymentMock) Process(ctx context.Context, transaction entity.Transaction) (*entity.Payment, error) {
+func (_m *PaymentMock) Process(ctx context.Context, transaction *entity.Transaction) (*entity.Payment, error) {
 	ret := _m.Called(ctx, transaction)
 
 	var r0 *entity.Payment
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, entity.Transaction) (*entity.Payment, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *entity.Transaction) (*entity.Payment, error)); ok {
 		return rf(ctx, transaction)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, entity.Transaction) *entity.Payment); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *entity.Transaction) *entity.Payment); ok {
 		r0 = rf(ctx, transaction)
 	} else {
 		if ret.Get(0) != nil {
@@ -39,7 +39,7 @@ func (_m *PaymentMock) Process(ctx context.Context, transaction entity.Transacti
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, entity.Transaction) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *entity.Transaction) error); ok {
 		r1 = rf(ctx, transaction)
 	} else {
 		r1 = ret.Error(1)
@@ -55,14 +55,14 @@ type PaymentMock_Process_Call struct {
 
 // Process is a helper method to define mock.On call
 //   - ctx context.Context
-//   - transaction entity.Transaction
+//   - transaction *entity.Transaction
 func (_e *PaymentMock_Expecter) Process(ctx interface{}, transaction interface{}) *PaymentMock_Process_Call {
 	return &PaymentMock_Process_Call{Call: _e.mock.On("Process", ctx, transaction)}
 }
 
-func (_c *PaymentMock_Process_Call) Run(run func(ctx context.Context, transaction entity.Transaction)) *PaymentMock_Process_Call {
+func (_c *PaymentMock_Process_Call) Run(run func(ctx context.Context, transaction *entity.Transaction)) *PaymentMock_Process_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(entity.Transaction))
+		run(args[0].(context.Context), args[1].(*entity.Transaction))
 	})
 	return _c
 }
@@ -72,7 +72,7 @@ func (_c *PaymentMock_Process_Call) Return(_a0 *entity.Payment, _a1 error) *Paym
 	return _c
 }
 
-func (_c *PaymentMock_Process_Call) RunAndReturn(run func(context.Context, entity.Transaction) (*entity.Payment, error)) *PaymentMock_Process_Call {
+func (_c *PaymentMock_Process_Call) RunAndReturn(run func(context.Context, *entity.Transaction) (*entity.Payment, error)) *PaymentMock_Process_Call {
 	_c.Call.Return(run)
 	return _c
 }

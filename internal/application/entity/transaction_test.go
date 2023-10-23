@@ -137,9 +137,6 @@ func TestMarshalTransaction(t *testing.T) {
 				"identification": "Identification",
 				"address": "Address",
 				"cep": "Cep"
-			},
-			"acquirer": { 
-				"name": "Name"
 			}
 		}
 	`

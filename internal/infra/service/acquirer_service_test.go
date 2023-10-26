@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 
 	app_errors "github.com/sesaquecruz/go-payment-processor/internal/application/errors"
 
@@ -33,6 +34,8 @@ func (s *AcquirerServiceTestSuite) SetupSuite() {
 	go func() {
 		acquirerApp.Listen(":6062")
 	}()
+
+	time.Sleep(1 * time.Second)
 
 	requestBuilder := func(url string) AcquirerRequestBuilder {
 		return func(ctx context.Context, transaction *entity.Transaction) (*http.Request, error) {

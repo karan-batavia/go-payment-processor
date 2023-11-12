@@ -29,7 +29,7 @@ services:
     container_name: acquirer
     build:
       context: .
-      dockerfile: ./cmd/acquirer/Dockerfile
+      dockerfile: ./test/acquirer/cmd/acquirer/Dockerfile
     image: go-acquirer:latest
     ports:
       - "6061:6061"

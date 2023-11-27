@@ -3,18 +3,23 @@ with-expecter: True
 filename: "{{.InterfaceName}}Mock.go"
 mockname: "{{.InterfaceName}}Mock"
 packages:
-  github.com/sesaquecruz/go-payment-processor/internal/application/repository:
+  github.com/sesaquecruz/go-payment-processor/internal/core/repository:
     config:
       all: True
-      dir: "mocks/application/repository"
+      dir: "test/mocks/core/repository"
       outpkg: "repository"
-  github.com/sesaquecruz/go-payment-processor/internal/application/service:
+  github.com/sesaquecruz/go-payment-processor/internal/core/service:
     config:
       all: True
-      dir: "mocks/application/service"
+      dir: "test/mocks/core/service"
       outpkg: "service"
-  github.com/sesaquecruz/go-payment-processor/internal/application/usecase:
+  github.com/sesaquecruz/go-payment-processor/internal/core/usecase:
     config:
       all: True
-      dir: "mocks/application/usecase"
+      dir: "test/mocks/core/usecase"
       outpkg: "usecase"
+  github.com/sesaquecruz/go-payment-processor/internal/infra/web/handler:
+    config:
+      all: True
+      dir: "test/mocks/infra/web/handler"
+      outpkg: "handler"

@@ -9,10 +9,6 @@ import (
 	core_errors "github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 )
 
-const (
-	errorCardTokenIsInvalid = core_errors.Error("card token is invalid")
-)
-
 type CardRepository struct {
 	db *sql.DB
 }
@@ -39,7 +35,7 @@ func (r *CardRepository) FindCard(ctx context.Context, cardToken string) (*entit
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, core_errors.NewNotFoundError(errorCardTokenIsInvalid)
+			return nil, core_errors.NewNotFoundError("card token is invalid")
 		}
 
 		return nil, core_errors.NewInternalError(err)

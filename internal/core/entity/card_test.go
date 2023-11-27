@@ -18,12 +18,12 @@ func TestCardFactory(t *testing.T) {
 
 func TestCardValidator(t *testing.T) {
 	testCases := []struct {
-		Test       string
-		Token      string
-		Holder     string
-		Expiration string
-		Brand      string
-		errs       []error
+		TestName       string
+		CardToken      string
+		CardHolder     string
+		CardExpiration string
+		CardBrand      string
+		Err            *errors.ValidationError
 	}{
 		{
 			"token is empty",
@@ -31,7 +31,7 @@ func TestCardValidator(t *testing.T) {
 			"Holder",
 			"Expiration",
 			"Brand",
-			[]error{ErrorCardTokenIsRequired},
+			errors.NewValidationError("card token is required"),
 		},
 		{
 			"holder is empty",
@@ -39,7 +39,7 @@ func TestCardValidator(t *testing.T) {
 			"",
 			"Expiration",
 			"Brand",
-			[]error{ErrorCardHolderIsRequired},
+			errors.NewValidationError("card holder is required"),
 		},
 		{
 			"expiration is empty",
@@ -47,7 +47,7 @@ func TestCardValidator(t *testing.T) {
 			"Holder",
 			"",
 			"Brand",
-			[]error{ErrorCardExpirationIsRequired},
+			errors.NewValidationError("card expiration is required"),
 		},
 		{
 			"brand is empty",
@@ -55,7 +55,7 @@ func TestCardValidator(t *testing.T) {
 			"Holder",
 			"Expiration",
 			"",
-			[]error{ErrorCardBrandIsRequired},
+			errors.NewValidationError("card brand is required"),
 		},
 		{
 			"all fields are invalid",
@@ -63,12 +63,12 @@ func TestCardValidator(t *testing.T) {
 			"",
 			"",
 			"",
-			[]error{
-				ErrorCardTokenIsRequired,
-				ErrorCardHolderIsRequired,
-				ErrorCardExpirationIsRequired,
-				ErrorCardBrandIsRequired,
-			},
+			errors.NewValidationError(
+				"card token is required",
+				"card holder is required",
+				"card expiration is required",
+				"card brand is required",
+			),
 		},
 		{
 			"all fields are valid",
@@ -81,20 +81,18 @@ func TestCardValidator(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.Test, func(t *testing.T) {
-			err := NewCard(tc.Token, tc.Holder, tc.Expiration, tc.Brand).Validate()
-			if tc.errs == nil && err == nil {
+		t.Run(tc.TestName, func(t *testing.T) {
+			err := NewCard(tc.CardToken, tc.CardHolder, tc.CardExpiration, tc.CardBrand).Validate()
+			if tc.Err == nil && err == nil {
 				return
 			}
 
-			var v *errors.ValidationError
-			assert.ErrorAs(t, err, &v)
+			var verr *errors.ValidationError
+			assert.ErrorAs(t, err, &verr)
+			assert.Equal(t, len(tc.Err.Messages), len(verr.Messages))
 
-			errs := v.Unwrap()
-			assert.Equal(t, len(tc.errs), len(errs))
-
-			for i, err := range tc.errs {
-				assert.ErrorIs(t, err, errs[i])
+			for i, msg := range tc.Err.Messages {
+				assert.Equal(t, msg, verr.Messages[i])
 			}
 		})
 	}

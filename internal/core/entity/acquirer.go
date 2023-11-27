@@ -4,12 +4,8 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 )
 
-const (
-	ErrorAcquirerNameIsRequired = errors.Error("acquirer name is required")
-)
-
 type Acquirer struct {
-	Name string `json:"name"`
+	Name string
 }
 
 func NewAcquirer(name string) *Acquirer {
@@ -19,14 +15,14 @@ func NewAcquirer(name string) *Acquirer {
 }
 
 func (a *Acquirer) Validate() error {
-	errs := make([]error, 0)
+	msgs := make([]string, 0)
 
 	if a.Name == "" {
-		errs = append(errs, ErrorAcquirerNameIsRequired)
+		msgs = append(msgs, "acquirer name is required")
 	}
 
-	if len(errs) > 0 {
-		return errors.NewValidationError(errs...)
+	if len(msgs) > 0 {
+		return errors.NewValidationError(msgs...)
 	}
 
 	return nil

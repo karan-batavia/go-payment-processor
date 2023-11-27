@@ -54,7 +54,7 @@ func (s *CardRepositoryTestSuite) TestFindCards() {
 
 	type Expected struct {
 		Card *entity.Card
-		Err  error
+		Err  *errors.NotFoundError
 	}
 
 	testCases := []struct {
@@ -114,7 +114,7 @@ func (s *CardRepositoryTestSuite) TestFindCards() {
 			},
 			Expected: &Expected{
 				nil,
-				errorCardTokenIsInvalid,
+				errors.NewNotFoundError("card token is invalid"),
 			},
 		},
 	}
@@ -122,13 +122,14 @@ func (s *CardRepositoryTestSuite) TestFindCards() {
 	for _, tc := range testCases {
 		s.T().Run(tc.Test, func(t *testing.T) {
 			card, err := s.cardRepository.FindCard(s.ctx, tc.Input.CardToken)
-			if err != nil {
-				var e *errors.NotFoundError
-				s.ErrorAs(err, &e)
+			if tc.Expected.Err == nil && err == nil {
+				s.Equal(tc.Expected.Card, card)
+				return
 			}
 
-			s.ErrorIs(err, tc.Expected.Err)
-			s.Equal(tc.Expected.Card, card)
+			var e *errors.NotFoundError
+			s.Require().ErrorAs(err, &e)
+			s.Equal(tc.Expected.Err.Message, e.Message)
 		})
 	}
 }

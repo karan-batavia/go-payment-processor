@@ -4,18 +4,10 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 )
 
-const (
-	ErrorPurchaseItemsIsRequired = errors.Error("purchase items is required")
-
-	ErrorPurchaseValueIsInvalid        = errors.Error("purchase value is invalid")
-	ErrorPurchaseItemsIsInvalid        = errors.Error("purchase items is invalid")
-	ErrorPurchaseInstallmentsIsInvalid = errors.Error("purchase installments is invalid")
-)
-
 type Purchase struct {
-	Value        float64  `json:"value"`
-	Items        []string `json:"items"`
-	Installments int      `json:"installments"`
+	Value        float64
+	Items        []string
+	Installments int
 }
 
 func NewPurchase(value float64, items []string, installments int) *Purchase {
@@ -27,29 +19,29 @@ func NewPurchase(value float64, items []string, installments int) *Purchase {
 }
 
 func (p *Purchase) Validate() error {
-	errs := make([]error, 0)
+	msgs := make([]string, 0)
 
 	if p.Value <= 0 {
-		errs = append(errs, ErrorPurchaseValueIsInvalid)
+		msgs = append(msgs, "purchase value is invalid")
 	}
 
 	if p.Items == nil || len(p.Items) == 0 {
-		errs = append(errs, ErrorPurchaseItemsIsRequired)
+		msgs = append(msgs, "purchase items is required")
 	} else {
 		for _, item := range p.Items {
 			if item == "" {
-				errs = append(errs, ErrorPurchaseItemsIsInvalid)
+				msgs = append(msgs, "purchase items is invalid")
 				break
 			}
 		}
 	}
 
 	if p.Installments <= 0 {
-		errs = append(errs, ErrorPurchaseInstallmentsIsInvalid)
+		msgs = append(msgs, "purchase installments is invalid")
 	}
 
-	if len(errs) > 0 {
-		return errors.NewValidationError(errs...)
+	if len(msgs) > 0 {
+		return errors.NewValidationError(msgs...)
 	}
 
 	return nil

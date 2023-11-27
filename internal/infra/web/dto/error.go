@@ -1,18 +1,18 @@
-package errors
+package dto
 
 import "bytes"
 
-type ValidationError struct {
+type Error struct {
 	Messages []string
 }
 
-func NewValidationError(messages ...string) *ValidationError {
-	return &ValidationError{
+func NewError(messages ...string) *Error {
+	return &Error{
 		Messages: messages,
 	}
 }
 
-func (e *ValidationError) Error() string {
+func (e *Error) Error() string {
 	buff := bytes.NewBufferString("")
 	for _, msg := range e.Messages {
 		buff.WriteString(msg)

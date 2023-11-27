@@ -19,71 +19,71 @@ func TestPurchaseFactory(t *testing.T) {
 
 func TestPurchaseValidator(t *testing.T) {
 	testCases := []struct {
-		Test         string
-		Value        float64
-		Items        []string
-		Installments int
-		errs         []error
+		TestName             string
+		PurchaseValue        float64
+		PurchaseItems        []string
+		PurchaseInstallments int
+		Err                  *errors.ValidationError
 	}{
 		{
 			"value is negative",
 			-1,
 			[]string{"Item 1", "Item 2"},
 			1,
-			[]error{ErrorPurchaseValueIsInvalid},
+			errors.NewValidationError("purchase value is invalid"),
 		},
 		{
 			"value is zero",
 			0,
 			[]string{"Item 1", "Item 2"},
 			1,
-			[]error{ErrorPurchaseValueIsInvalid},
+			errors.NewValidationError("purchase value is invalid"),
 		},
 		{
 			"items is nil",
 			1,
 			nil,
 			1,
-			[]error{ErrorPurchaseItemsIsRequired},
+			errors.NewValidationError("purchase items is required"),
 		},
 		{
 			"items is empty",
 			1,
 			[]string{},
 			1,
-			[]error{ErrorPurchaseItemsIsRequired},
+			errors.NewValidationError("purchase items is required"),
 		},
 		{
 			"items has empty elements",
 			1,
 			[]string{"Item 1", ""},
 			1,
-			[]error{ErrorPurchaseItemsIsInvalid},
+			errors.NewValidationError("purchase items is invalid"),
 		},
 		{
 			"installments is negative",
 			1,
 			[]string{"Item 1", "Item 2"},
 			-1,
-			[]error{ErrorPurchaseInstallmentsIsInvalid},
+			errors.NewValidationError("purchase installments is invalid"),
 		},
 		{
 			"installments is zero",
 			1,
 			[]string{"Item 1", "Item 2"},
 			0,
-			[]error{ErrorPurchaseInstallmentsIsInvalid},
+			errors.NewValidationError("purchase installments is invalid"),
 		},
 		{
 			"all fields are invalid",
 			0,
 			[]string{""},
 			0,
-			[]error{
-				ErrorPurchaseValueIsInvalid,
-				ErrorPurchaseItemsIsInvalid,
-				ErrorPurchaseInstallmentsIsInvalid,
-			},
+			errors.NewValidationError(
+				"purchase value is invalid",
+				"purchase items is invalid",
+				"purchase installments is invalid",
+			),
 		},
 		{
 			"all fields are valid",
@@ -95,20 +95,18 @@ func TestPurchaseValidator(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.Test, func(t *testing.T) {
-			err := NewPurchase(tc.Value, tc.Items, tc.Installments).Validate()
-			if tc.errs == nil && err == nil {
+		t.Run(tc.TestName, func(t *testing.T) {
+			err := NewPurchase(tc.PurchaseValue, tc.PurchaseItems, tc.PurchaseInstallments).Validate()
+			if tc.Err == nil && err == nil {
 				return
 			}
 
-			var v *errors.ValidationError
-			assert.ErrorAs(t, err, &v)
+			var verr *errors.ValidationError
+			assert.ErrorAs(t, err, &verr)
+			assert.Equal(t, len(tc.Err.Messages), len(verr.Messages))
 
-			errs := v.Unwrap()
-			assert.Equal(t, len(tc.errs), len(errs))
-
-			for i, err := range tc.errs {
-				assert.ErrorIs(t, err, errs[i])
+			for i, msg := range tc.Err.Messages {
+				assert.Equal(t, msg, verr.Messages[i])
 			}
 		})
 	}

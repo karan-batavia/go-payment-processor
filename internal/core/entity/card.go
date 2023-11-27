@@ -4,18 +4,11 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 )
 
-const (
-	ErrorCardTokenIsRequired      = errors.Error("card token is required")
-	ErrorCardHolderIsRequired     = errors.Error("card holder is required")
-	ErrorCardExpirationIsRequired = errors.Error("card expiration is required")
-	ErrorCardBrandIsRequired      = errors.Error("card brand is required")
-)
-
 type Card struct {
-	Token      string `json:"token"`
-	Holder     string `json:"holder"`
-	Expiration string `json:"expiration"`
-	Brand      string `json:"brand"`
+	Token      string
+	Holder     string
+	Expiration string
+	Brand      string
 }
 
 func NewCard(token string, holder string, expiration string, brand string) *Card {
@@ -28,26 +21,26 @@ func NewCard(token string, holder string, expiration string, brand string) *Card
 }
 
 func (c *Card) Validate() error {
-	errs := make([]error, 0)
+	msgs := make([]string, 0)
 
 	if c.Token == "" {
-		errs = append(errs, ErrorCardTokenIsRequired)
+		msgs = append(msgs, "card token is required")
 	}
 
 	if c.Holder == "" {
-		errs = append(errs, ErrorCardHolderIsRequired)
+		msgs = append(msgs, "card holder is required")
 	}
 
 	if c.Expiration == "" {
-		errs = append(errs, ErrorCardExpirationIsRequired)
+		msgs = append(msgs, "card expiration is required")
 	}
 
 	if c.Brand == "" {
-		errs = append(errs, ErrorCardBrandIsRequired)
+		msgs = append(msgs, "card brand is required")
 	}
 
-	if len(errs) > 0 {
-		return errors.NewValidationError(errs...)
+	if len(msgs) > 0 {
+		return errors.NewValidationError(msgs...)
 	}
 
 	return nil

@@ -18,3 +18,8 @@ packages:
       all: True
       dir: "test/mocks/core/usecase"
       outpkg: "usecase"
+  github.com/sesaquecruz/go-payment-processor/internal/infra/web/handler:
+    config:
+      all: True
+      dir: "test/mocks/infra/web/handler"
+      outpkg: "handler"

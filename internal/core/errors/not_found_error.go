@@ -1,19 +1,15 @@
 package errors
 
 type NotFoundError struct {
-	err error
+	Message string
 }
 
-func NewNotFoundError(err error) *NotFoundError {
+func NewNotFoundError(message string) *NotFoundError {
 	return &NotFoundError{
-		err: err,
+		Message: message,
 	}
 }
 
 func (e *NotFoundError) Error() string {
-	return e.err.Error()
-}
-
-func (e *NotFoundError) Unwrap() error {
-	return e.err
+	return e.Message
 }

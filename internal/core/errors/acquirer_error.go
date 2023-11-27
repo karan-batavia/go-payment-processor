@@ -1,21 +1,17 @@
 package errors
 
 type AcquirerError struct {
-	Code int
-	Err  error
+	Code    int
+	Message string
 }
 
-func NewAcquirerError(code int, err error) *AcquirerError {
+func NewAcquirerError(code int, message string) *AcquirerError {
 	return &AcquirerError{
-		Code: code,
-		Err:  err,
+		Code:    code,
+		Message: message,
 	}
 }
 
 func (e *AcquirerError) Error() string {
-	return e.Err.Error()
-}
-
-func (e *AcquirerError) Unwrap() error {
-	return e.Err
+	return e.Message
 }

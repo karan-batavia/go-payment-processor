@@ -8,54 +8,42 @@ import (
 )
 
 func TestPaymentFactory(t *testing.T) {
-	payment := NewPayment("Id", "Status")
+	payment := NewPayment("Id")
 	assert.NotNil(t, payment)
 	assert.Equal(t, payment.Id, "Id")
-	assert.Equal(t, payment.Status, "Status")
 }
 
 func TestPaymentValidator(t *testing.T) {
 	testCases := []struct {
-		Test   string
-		Id     string
-		Status string
-		errs   []error
+		TestName  string
+		PaymentId string
+		Err       *errors.ValidationError
 	}{
 		{
 			"id is empty",
 			"",
-			"Status",
-			[]error{ErrorPaymentIdIsRequired},
-		},
-		{
-			"status is empty",
-			"Id",
-			"",
-			[]error{ErrorPaymentStatusIsRequired},
+			errors.NewValidationError("payment id is required"),
 		},
 		{
 			"all fields are valid",
 			"Id",
-			"Status",
 			nil,
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.Test, func(t *testing.T) {
-			err := NewPayment(tc.Id, tc.Status).Validate()
-			if tc.errs == nil && err == nil {
+		t.Run(tc.TestName, func(t *testing.T) {
+			err := NewPayment(tc.PaymentId).Validate()
+			if tc.Err == nil && err == nil {
 				return
 			}
 
-			var v *errors.ValidationError
-			assert.ErrorAs(t, err, &v)
+			var verr *errors.ValidationError
+			assert.ErrorAs(t, err, &verr)
+			assert.Equal(t, len(tc.Err.Messages), len(verr.Messages))
 
-			errs := v.Unwrap()
-			assert.Equal(t, len(tc.errs), len(errs))
-
-			for i, err := range tc.errs {
-				assert.ErrorIs(t, err, errs[i])
+			for i, msg := range tc.Err.Messages {
+				assert.Equal(t, msg, verr.Messages[i])
 			}
 		})
 	}

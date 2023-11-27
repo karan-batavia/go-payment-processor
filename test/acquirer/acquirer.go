@@ -12,29 +12,17 @@ import (
 )
 
 type (
-	card struct {
-		Token      string `json:"token"      validate:"required"`
-		Holder     string `json:"holder"     validate:"required"`
-		Expiration string `json:"expiration" validate:"required"`
-		Brand      string `json:"brand"      validate:"required"`
-	}
-
-	purchase struct {
-		Value        float64  `json:"value"        validate:"required"`
-		Items        []string `json:"items"        validate:"required"`
-		Installments int      `json:"installments" validate:"required"`
-	}
-
-	store struct {
-		Identification string `json:"identification" validate:"required"`
-		Address        string `json:"address"        validate:"required"`
-		Cep            string `json:"cep"            validate:"required"`
-	}
-
 	transaction struct {
-		Card     card     `json:"card"     validate:"required"`
-		Purchase purchase `json:"purchase" validate:"required"`
-		Store    store    `json:"store"    validate:"required"`
+		CardToken            string   `json:"card_token"            validate:"required"`
+		CardHolder           string   `json:"card_holder"           validate:"required"`
+		CardExpiration       string   `json:"card_expiration"       validate:"required"`
+		CardBrand            string   `json:"card_brand"            validate:"required"`
+		PurchaseValue        float64  `json:"purchase_value"        validate:"required"`
+		PurchaseItems        []string `json:"purchase_items"        validate:"required"`
+		PurchaseInstallments int      `json:"purchase_installments" validate:"required"`
+		StoreIdentification  string   `json:"store_identification"  validate:"required"`
+		StoreAddress         string   `json:"store_address"         validate:"required"`
+		StoreCep             string   `json:"store_cep"             validate:"required"`
 	}
 
 	response struct {
@@ -59,21 +47,21 @@ func App() *fiber.App {
 	})
 
 	app.Post("/stone", handler(func(t *transaction) error {
-		if t.Purchase.Value > 100 {
+		if t.PurchaseValue > 100 {
 			return errors.New("the maximum purchase value should not exceed 100")
 		}
 		return nil
 	}))
 
 	app.Post("/cielo", handler(func(t *transaction) error {
-		if t.Purchase.Value > 500 {
+		if t.PurchaseValue > 500 {
 			return errors.New("the maximum purchase value should not exceed 500")
 		}
 		return nil
 	}))
 
 	app.Post("/rede", handler(func(t *transaction) error {
-		if t.Purchase.Value > 1000 {
+		if t.PurchaseValue > 1000 {
 			return errors.New("the maximum purchase value should not exceed 1000")
 		}
 		return nil

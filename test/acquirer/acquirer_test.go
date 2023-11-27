@@ -190,21 +190,15 @@ func TestRedeAcquirer(t *testing.T) {
 
 func createTransaction(value float64) *transaction {
 	return &transaction{
-		Card: card{
-			Token:      "Token",
-			Holder:     "Holder",
-			Expiration: "01/2030",
-			Brand:      "Brand",
-		},
-		Purchase: purchase{
-			Value:        value,
-			Items:        []string{"Item 1", "Item 2"},
-			Installments: 2,
-		},
-		Store: store{
-			Identification: "Identification",
-			Address:        "Address",
-			Cep:            "Cep",
-		},
+		CardToken:            "Token",
+		CardHolder:           "Holder",
+		CardExpiration:       "01/2030",
+		CardBrand:            "Brand",
+		PurchaseValue:        value,
+		PurchaseItems:        []string{"Item 1", "Item 2"},
+		PurchaseInstallments: 2,
+		StoreIdentification:  "Identification",
+		StoreAddress:         "Address",
+		StoreCep:             "Cep",
 	}
 }

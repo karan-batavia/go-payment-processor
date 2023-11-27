@@ -38,7 +38,35 @@ func (s *PaymentServiceTestSuite) SetupSuite() {
 
 	requestBuilder := func(url string) AcquirerRequestBuilder {
 		return func(ctx context.Context, transaction *entity.Transaction) (*http.Request, error) {
-			body, err := json.Marshal(transaction)
+			type Transaction struct {
+				CardToken            string   `json:"card_token"`
+				CardHolder           string   `json:"card_holder"`
+				CardExpiration       string   `json:"card_expiration"`
+				CardBrand            string   `json:"card_brand"`
+				PurchaseValue        float64  `json:"purchase_value"`
+				PurchaseItems        []string `json:"purchase_items"`
+				PurchaseInstallments int      `json:"purchase_installments"`
+				StoreIdentification  string   `json:"store_identification"`
+				StoreAddress         string   `json:"store_address"`
+				StoreCep             string   `json:"store_cep"`
+				StoreName            string   `json:"store_name"`
+			}
+
+			acquirerTransaction := Transaction{
+				CardToken:            transaction.Card.Token,
+				CardHolder:           transaction.Card.Holder,
+				CardExpiration:       transaction.Card.Expiration,
+				CardBrand:            transaction.Card.Brand,
+				PurchaseValue:        transaction.Purchase.Value,
+				PurchaseItems:        transaction.Purchase.Items,
+				PurchaseInstallments: transaction.Purchase.Installments,
+				StoreIdentification:  transaction.Store.Identification,
+				StoreAddress:         transaction.Store.Address,
+				StoreCep:             transaction.Store.Cep,
+				StoreName:            transaction.Acquirer.Name,
+			}
+
+			body, err := json.Marshal(acquirerTransaction)
 			if err != nil {
 				return nil, errors.NewInternalError(err)
 			}
@@ -71,10 +99,10 @@ func (s *PaymentServiceTestSuite) SetupSuite() {
 		}
 
 		if response.StatusCode != http.StatusOK {
-			return nil, errors.NewAcquirerError(responseData.Code, errors.Error(responseData.Message))
+			return nil, errors.NewAcquirerError(responseData.Code, responseData.Message)
 		}
 
-		payment := entity.NewPayment(responseData.Message, entity.PaymentStatusPaid)
+		payment := entity.NewPayment(responseData.Message)
 		return payment, nil
 	}
 
@@ -110,7 +138,6 @@ func (s *PaymentServiceTestSuite) TestAcquirerStone() {
 		payment, err := s.PaymentService.ProcessTransaction(s.ctx, transaction)
 		require.Nil(t, err)
 		assert.NotEmpty(t, payment.Id)
-		assert.Equal(t, entity.PaymentStatusPaid, payment.Status)
 	})
 
 	s.T().Run("fails to process the transaction", func(t *testing.T) {
@@ -121,7 +148,7 @@ func (s *PaymentServiceTestSuite) TestAcquirerStone() {
 		var e *errors.AcquirerError
 		require.ErrorAs(t, err, &e)
 		assert.Equal(t, http.StatusUnprocessableEntity, e.Code)
-		assert.Equal(t, "the maximum purchase value should not exceed 100", e.Err.Error())
+		assert.Equal(t, "the maximum purchase value should not exceed 100", e.Message)
 	})
 }
 
@@ -133,7 +160,6 @@ func (s *PaymentServiceTestSuite) TestAcquirerCielo() {
 		payment, err := s.PaymentService.ProcessTransaction(s.ctx, transaction)
 		require.Nil(t, err)
 		assert.NotEmpty(t, payment.Id)
-		assert.Equal(t, entity.PaymentStatusPaid, payment.Status)
 	})
 
 	s.T().Run("fails to process the transaction", func(t *testing.T) {
@@ -144,7 +170,7 @@ func (s *PaymentServiceTestSuite) TestAcquirerCielo() {
 		var e *errors.AcquirerError
 		require.ErrorAs(t, err, &e)
 		assert.Equal(t, http.StatusUnprocessableEntity, e.Code)
-		assert.Equal(t, "the maximum purchase value should not exceed 500", e.Err.Error())
+		assert.Equal(t, "the maximum purchase value should not exceed 500", e.Message)
 	})
 }
 
@@ -156,7 +182,6 @@ func (s *PaymentServiceTestSuite) TestAcquirerRede() {
 		payment, err := s.PaymentService.ProcessTransaction(s.ctx, transaction)
 		require.Nil(t, err)
 		assert.NotEmpty(t, payment.Id)
-		assert.Equal(t, entity.PaymentStatusPaid, payment.Status)
 	})
 
 	s.T().Run("fails to process the transaction", func(t *testing.T) {
@@ -167,7 +192,7 @@ func (s *PaymentServiceTestSuite) TestAcquirerRede() {
 		var e *errors.AcquirerError
 		require.ErrorAs(t, err, &e)
 		assert.Equal(t, http.StatusUnprocessableEntity, e.Code)
-		assert.Equal(t, "the maximum purchase value should not exceed 1000", e.Err.Error())
+		assert.Equal(t, "the maximum purchase value should not exceed 1000", e.Message)
 	})
 }
 
@@ -181,5 +206,5 @@ func createTransaction(acquirerName string, value float64) *entity.Transaction {
 	store := entity.NewStore("Identification", "Address", "Cep")
 	acquirer := entity.NewAcquirer(acquirerName)
 
-	return entity.NewTransaction(*card, *purchase, *store, *acquirer)
+	return entity.NewTransaction(card, purchase, store, acquirer)
 }

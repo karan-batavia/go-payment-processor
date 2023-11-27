@@ -4,12 +4,6 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 )
 
-const (
-	ErrorStoreIdentificationIsRequired = errors.Error("store identification is requred")
-	ErrorStoreAddressIsRequired        = errors.Error("store address is required")
-	ErrorStoreCepIsRequired            = errors.Error("store cep is required")
-)
-
 type Store struct {
 	Identification string `json:"identification"`
 	Address        string `json:"address"`
@@ -25,22 +19,22 @@ func NewStore(identification string, address string, cep string) *Store {
 }
 
 func (s *Store) Validate() error {
-	errs := make([]error, 0)
+	msgs := make([]string, 0)
 
 	if s.Identification == "" {
-		errs = append(errs, ErrorStoreIdentificationIsRequired)
+		msgs = append(msgs, "store identification is required")
 	}
 
 	if s.Address == "" {
-		errs = append(errs, ErrorStoreAddressIsRequired)
+		msgs = append(msgs, "store address is required")
 	}
 
 	if s.Cep == "" {
-		errs = append(errs, ErrorStoreCepIsRequired)
+		msgs = append(msgs, "store cep is required")
 	}
 
-	if len(errs) > 0 {
-		return errors.NewValidationError(errs...)
+	if len(msgs) > 0 {
+		return errors.NewValidationError(msgs...)
 	}
 
 	return nil

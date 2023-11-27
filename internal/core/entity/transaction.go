@@ -7,13 +7,13 @@ import (
 )
 
 type Transaction struct {
-	Card     Card     `json:"card"`
-	Purchase Purchase `json:"purchase"`
-	Store    Store    `json:"store"`
-	Acquirer Acquirer `json:"-"`
+	Card     *Card     `json:"card"`
+	Purchase *Purchase `json:"purchase"`
+	Store    *Store    `json:"store"`
+	Acquirer *Acquirer `json:"-"`
 }
 
-func NewTransaction(card Card, purchase Purchase, store Store, acquirer Acquirer) *Transaction {
+func NewTransaction(card *Card, purchase *Purchase, store *Store, acquirer *Acquirer) *Transaction {
 	return &Transaction{
 		Card:     card,
 		Purchase: purchase,
@@ -23,38 +23,42 @@ func NewTransaction(card Card, purchase Purchase, store Store, acquirer Acquirer
 }
 
 func (t *Transaction) Validate() error {
-	errs := make([]error, 0)
+	msgs := make([]string, 0)
 
-	if err := t.Card.Validate(); err != nil {
+	err := t.Card.Validate()
+	if err != nil {
 		var v *core_errors.ValidationError
 		if errors.As(err, &v) {
-			errs = append(errs, v.Unwrap()...)
+			msgs = append(msgs, v.Messages...)
 		}
 	}
 
-	if err := t.Purchase.Validate(); err != nil {
+	err = t.Purchase.Validate()
+	if err != nil {
 		var v *core_errors.ValidationError
 		if errors.As(err, &v) {
-			errs = append(errs, v.Unwrap()...)
+			msgs = append(msgs, v.Messages...)
 		}
 	}
 
-	if err := t.Store.Validate(); err != nil {
+	err = t.Store.Validate()
+	if err != nil {
 		var v *core_errors.ValidationError
 		if errors.As(err, &v) {
-			errs = append(errs, v.Unwrap()...)
+			msgs = append(msgs, v.Messages...)
 		}
 	}
 
-	if err := t.Acquirer.Validate(); err != nil {
+	err = t.Acquirer.Validate()
+	if err != nil {
 		var v *core_errors.ValidationError
 		if errors.As(err, &v) {
-			errs = append(errs, v.Unwrap()...)
+			msgs = append(msgs, v.Messages...)
 		}
 	}
 
-	if len(errs) > 0 {
-		return core_errors.NewValidationError(errs...)
+	if len(msgs) > 0 {
+		return core_errors.NewValidationError(msgs...)
 	}
 
 	return nil

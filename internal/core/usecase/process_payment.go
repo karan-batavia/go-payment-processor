@@ -11,7 +11,7 @@ import (
 type ProcessPaymentInput struct {
 	CardToken            string
 	PurchaseValue        float64
-	PurchaseItens        []string
+	PurchaseItems        []string
 	PurchaseInstallments int
 	StoreIdentification  string
 	StoreAddress         string
@@ -20,37 +20,38 @@ type ProcessPaymentInput struct {
 }
 
 type ProcessPaymentOutput struct {
-	PaymentStatus string
+	PaymentId string
 }
 
-type ProcessPayment interface {
-	Execute(ctx context.Context, input ProcessPaymentInput) (*ProcessPaymentOutput, error)
+type IProcessPayment interface {
+	Execute(ctx context.Context, input *ProcessPaymentInput) (*ProcessPaymentOutput, error)
 }
 
-type DefaultProcessPayment struct {
-	cardRepository repository.CardRepository
-	paymentService service.PaymentService
+type ProcessPayment struct {
+	cardRepository repository.ICardRepository
+	paymentService service.IPaymentService
 }
 
-func NewDefaultProcessPayment(cardRepository repository.CardRepository, paymentService service.PaymentService) *DefaultProcessPayment {
-	return &DefaultProcessPayment{
+func NewProcessPayment(cardRepository repository.ICardRepository, paymentService service.IPaymentService) *ProcessPayment {
+	return &ProcessPayment{
 		cardRepository: cardRepository,
 		paymentService: paymentService,
 	}
 }
 
-func (p *DefaultProcessPayment) Execute(ctx context.Context, input ProcessPaymentInput) (*ProcessPaymentOutput, error) {
+func (p *ProcessPayment) Execute(ctx context.Context, input *ProcessPaymentInput) (*ProcessPaymentOutput, error) {
 	card, err := p.cardRepository.FindCard(ctx, input.CardToken)
 	if err != nil {
 		return nil, err
 	}
 
-	purchase := entity.NewPurchase(input.PurchaseValue, input.PurchaseItens, input.PurchaseInstallments)
+	purchase := entity.NewPurchase(input.PurchaseValue, input.PurchaseItems, input.PurchaseInstallments)
 	store := entity.NewStore(input.StoreIdentification, input.StoreAddress, input.StoreCep)
 	acquirer := entity.NewAcquirer(input.AcquirerName)
+	transaction := entity.NewTransaction(card, purchase, store, acquirer)
 
-	transaction := entity.NewTransaction(*card, *purchase, *store, *acquirer)
-	if err = transaction.Validate(); err != nil {
+	err = transaction.Validate()
+	if err != nil {
 		return nil, err
 	}
 
@@ -60,7 +61,7 @@ func (p *DefaultProcessPayment) Execute(ctx context.Context, input ProcessPaymen
 	}
 
 	output := &ProcessPaymentOutput{
-		PaymentStatus: payment.Status,
+		PaymentId: payment.Id,
 	}
 
 	return output, nil

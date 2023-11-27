@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
@@ -14,22 +13,22 @@ func TestTransactionFactory(t *testing.T) {
 	store := NewStore("Identification", "Address", "Cep")
 	acquirer := NewAcquirer("Acquirer")
 
-	transaction := NewTransaction(*card, *purchase, *store, *acquirer)
+	transaction := NewTransaction(card, purchase, store, acquirer)
 	assert.NotNil(t, transaction)
-	assert.Equal(t, &transaction.Card, card)
-	assert.Equal(t, &transaction.Purchase, purchase)
-	assert.Equal(t, &transaction.Store, store)
-	assert.Equal(t, &transaction.Store, store)
+	assert.Equal(t, transaction.Card, card)
+	assert.Equal(t, transaction.Purchase, purchase)
+	assert.Equal(t, transaction.Store, store)
+	assert.Equal(t, transaction.Store, store)
 }
 
 func TestTransactionValidator(t *testing.T) {
 	testCases := []struct {
-		Test     string
+		TestName string
 		Card     *Card
 		Purchase *Purchase
 		Store    *Store
 		Acquirer *Acquirer
-		errs     []error
+		Err      *errors.ValidationError
 	}{
 		{
 			"card is invalid",
@@ -37,10 +36,10 @@ func TestTransactionValidator(t *testing.T) {
 			NewPurchase(6.99, []string{"Item 1"}, 1),
 			NewStore("Identification", "Address", "Cep"),
 			NewAcquirer("Acquirer"),
-			[]error{
-				ErrorCardExpirationIsRequired,
-				ErrorCardBrandIsRequired,
-			},
+			errors.NewValidationError(
+				"card expiration is required",
+				"card brand is required",
+			),
 		},
 		{
 			"purchase is invalid",
@@ -48,10 +47,10 @@ func TestTransactionValidator(t *testing.T) {
 			NewPurchase(0, []string{"Item 1"}, -1),
 			NewStore("Identification", "Address", "Cep"),
 			NewAcquirer("Acquirer"),
-			[]error{
-				ErrorPurchaseValueIsInvalid,
-				ErrorPurchaseInstallmentsIsInvalid,
-			},
+			errors.NewValidationError(
+				"purchase value is invalid",
+				"purchase installments is invalid",
+			),
 		},
 		{
 			"store is invalid",
@@ -59,11 +58,11 @@ func TestTransactionValidator(t *testing.T) {
 			NewPurchase(6.99, []string{"Item 1"}, 1),
 			NewStore("", "", ""),
 			NewAcquirer("Acquirer"),
-			[]error{
-				ErrorStoreIdentificationIsRequired,
-				ErrorStoreAddressIsRequired,
-				ErrorStoreCepIsRequired,
-			},
+			errors.NewValidationError(
+				"store identification is required",
+				"store address is required",
+				"store cep is required",
+			),
 		},
 		{
 			"acquirer is invalid",
@@ -71,9 +70,7 @@ func TestTransactionValidator(t *testing.T) {
 			NewPurchase(6.99, []string{"Item 1"}, 1),
 			NewStore("Identification", "Address", "Cep"),
 			NewAcquirer(""),
-			[]error{
-				ErrorAcquirerNameIsRequired,
-			},
+			errors.NewValidationError("acquirer name is required"),
 		},
 		{
 			"all fields are invalid",
@@ -81,12 +78,12 @@ func TestTransactionValidator(t *testing.T) {
 			NewPurchase(6.99, []string{}, 1),
 			NewStore("", "Address", "Cep"),
 			NewAcquirer(""),
-			[]error{
-				ErrorCardExpirationIsRequired,
-				ErrorPurchaseItemsIsRequired,
-				ErrorStoreIdentificationIsRequired,
-				ErrorAcquirerNameIsRequired,
-			},
+			errors.NewValidationError(
+				"card expiration is required",
+				"purchase items is required",
+				"store identification is required",
+				"acquirer name is required",
+			),
 		},
 		{
 			"all fields are valid",
@@ -99,70 +96,19 @@ func TestTransactionValidator(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.Test, func(t *testing.T) {
-			err := NewTransaction(*tc.Card, *tc.Purchase, *tc.Store, *tc.Acquirer).Validate()
-			if tc.errs == nil && err == nil {
+		t.Run(tc.TestName, func(t *testing.T) {
+			err := NewTransaction(tc.Card, tc.Purchase, tc.Store, tc.Acquirer).Validate()
+			if tc.Err == nil && err == nil {
 				return
 			}
 
-			var v *errors.ValidationError
-			assert.ErrorAs(t, err, &v)
+			var verr *errors.ValidationError
+			assert.ErrorAs(t, err, &verr)
+			assert.Equal(t, len(tc.Err.Messages), len(verr.Messages))
 
-			errs := v.Unwrap()
-			assert.Equal(t, len(tc.errs), len(errs))
-
-			for i, err := range tc.errs {
-				assert.ErrorIs(t, err, errs[i])
+			for i, msg := range tc.Err.Messages {
+				assert.Equal(t, msg, verr.Messages[i])
 			}
 		})
 	}
-}
-
-func TestMarshalTransaction(t *testing.T) {
-	expected := `
-		{
-			"card": {
-				"token": "Token",
-				"holder": "Holder",
-				"expiration": "Expiration",
-				"brand": "Brand"
-			},
-			"purchase": {
-				"value": 4.99,
-				"items": ["Item 1, Item 2"],
-				"installments": 3
-			},
-			"store": {
-				"identification": "Identification",
-				"address": "Address",
-				"cep": "Cep"
-			}
-		}
-	`
-
-	transaction := Transaction{
-		Card: Card{
-			Token:      "Token",
-			Holder:     "Holder",
-			Expiration: "Expiration",
-			Brand:      "Brand",
-		},
-		Purchase: Purchase{
-			Value:        4.99,
-			Items:        []string{"Item 1, Item 2"},
-			Installments: 3,
-		},
-		Store: Store{
-			Identification: "Identification",
-			Address:        "Address",
-			Cep:            "Cep",
-		},
-		Acquirer: Acquirer{
-			Name: "Name",
-		},
-	}
-
-	actual, err := json.Marshal(&transaction)
-	assert.Nil(t, err)
-	assert.JSONEq(t, expected, string(actual))
 }

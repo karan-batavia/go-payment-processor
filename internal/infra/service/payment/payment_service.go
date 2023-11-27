@@ -5,11 +5,7 @@ import (
 	"net/http"
 
 	"github.com/sesaquecruz/go-payment-processor/internal/core/entity"
-	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
-)
-
-const (
-	errorAcquirerIsInvalid = errors.Error("acquirer is invalid")
+	core_errors "github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 )
 
 type PaymentService struct {
@@ -33,7 +29,7 @@ func NewPaymentService(options ...option) *PaymentService {
 func (s *PaymentService) ProcessTransaction(ctx context.Context, transaction *entity.Transaction) (*entity.Payment, error) {
 	acquirer, ok := s.acquirers[transaction.Acquirer.Name]
 	if !ok {
-		return nil, errors.NewNotFoundError(errorAcquirerIsInvalid)
+		return nil, core_errors.NewNotFoundError("acquirer is invalid")
 	}
 
 	request, err := acquirer.requestBuilder(ctx, transaction)
@@ -43,7 +39,7 @@ func (s *PaymentService) ProcessTransaction(ctx context.Context, transaction *en
 
 	response, err := s.httpClient.Do(request)
 	if err != nil {
-		return nil, errors.NewInternalError(err)
+		return nil, core_errors.NewInternalError(err)
 	}
 
 	defer response.Body.Close()

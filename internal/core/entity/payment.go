@@ -4,41 +4,25 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 )
 
-const (
-	ErrorPaymentIdIsRequired     = errors.Error("payment id is required")
-	ErrorPaymentStatusIsRequired = errors.Error("payment status is required")
-)
-
-const (
-	PaymentStatusPaid   = "paid"
-	PaymentStatusFailed = "failed"
-)
-
 type Payment struct {
-	Id     string `json:"id"`
-	Status string `json:"status"`
+	Id string
 }
 
-func NewPayment(id string, status string) *Payment {
+func NewPayment(id string) *Payment {
 	return &Payment{
-		Id:     id,
-		Status: status,
+		Id: id,
 	}
 }
 
 func (p *Payment) Validate() error {
-	errs := make([]error, 0)
+	msgs := make([]string, 0)
 
 	if p.Id == "" {
-		errs = append(errs, ErrorPaymentIdIsRequired)
+		msgs = append(msgs, "payment id is required")
 	}
 
-	if p.Status == "" {
-		errs = append(errs, ErrorPaymentStatusIsRequired)
-	}
-
-	if len(errs) > 0 {
-		return errors.NewValidationError(errs...)
+	if len(msgs) > 0 {
+		return errors.NewValidationError(msgs...)
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/sesaquecruz/go-payment-processor/internal/core/entity"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProcessPaymentWithValidTransaction(t *testing.T) {
@@ -21,7 +21,7 @@ func TestProcessPaymentWithValidTransaction(t *testing.T) {
 	input := ProcessPaymentInput{
 		CardToken:            card.Token,
 		PurchaseValue:        4.99,
-		PurchaseItens:        []string{"Item 1", "Item 2"},
+		PurchaseItems:        []string{"Item 1", "Item 2"},
 		PurchaseInstallments: 2,
 		StoreIdentification:  "Identification",
 		StoreAddress:         "Address",
@@ -29,34 +29,34 @@ func TestProcessPaymentWithValidTransaction(t *testing.T) {
 		AcquirerName:         "Acquirer",
 	}
 
-	cardRepository := repository.NewCardRepositoryMock(t)
+	cardRepository := repository.NewICardRepositoryMock(t)
 	cardRepository.
 		EXPECT().
 		FindCard(ctx, input.CardToken).
 		Return(card, nil).
 		Once()
 
-	paymentService := service.NewPaymentServiceMock(t)
+	paymentService := service.NewIPaymentServiceMock(t)
 	paymentService.
 		EXPECT().
 		ProcessTransaction(ctx, mock.Anything).
 		Run(func(ctx context.Context, transaction *entity.Transaction) {
-			assert.Equal(t, card, &transaction.Card)
+			assert.Equal(t, card, transaction.Card)
 			assert.Equal(t, input.PurchaseValue, transaction.Purchase.Value)
-			assert.EqualValues(t, input.PurchaseItens, transaction.Purchase.Items)
+			assert.EqualValues(t, input.PurchaseItems, transaction.Purchase.Items)
 			assert.Equal(t, input.PurchaseInstallments, transaction.Purchase.Installments)
 			assert.Equal(t, input.StoreIdentification, transaction.Store.Identification)
 			assert.Equal(t, input.StoreAddress, transaction.Store.Address)
 			assert.Equal(t, input.StoreCep, transaction.Store.Cep)
 		}).
-		Return(entity.NewPayment("id", entity.PaymentStatusPaid), nil).
+		Return(entity.NewPayment("id"), nil).
 		Once()
 
-	processPayment := NewDefaultProcessPayment(cardRepository, paymentService)
+	processPayment := NewProcessPayment(cardRepository, paymentService)
 
-	output, err := processPayment.Execute(ctx, input)
+	output, err := processPayment.Execute(ctx, &input)
 	assert.Nil(t, err)
-	assert.Equal(t, output.PaymentStatus, entity.PaymentStatusPaid)
+	assert.NotEmpty(t, output.PaymentId)
 }
 
 func TestProcessPaymentWithInvalidCardToken(t *testing.T) {
@@ -65,7 +65,7 @@ func TestProcessPaymentWithInvalidCardToken(t *testing.T) {
 	input := ProcessPaymentInput{
 		CardToken:            "",
 		PurchaseValue:        4.99,
-		PurchaseItens:        []string{"Item 1", "Item 2"},
+		PurchaseItems:        []string{"Item 1", "Item 2"},
 		PurchaseInstallments: 2,
 		StoreIdentification:  "Identification",
 		StoreAddress:         "Address",
@@ -73,24 +73,23 @@ func TestProcessPaymentWithInvalidCardToken(t *testing.T) {
 		AcquirerName:         "Acquirer",
 	}
 
-	cardRepository := repository.NewCardRepositoryMock(t)
+	cardRepository := repository.NewICardRepositoryMock(t)
 	cardRepository.
 		EXPECT().
 		FindCard(ctx, input.CardToken).
-		Return(nil, core_errors.NewNotFoundError(errors.New("card not found"))).
+		Return(nil, core_errors.NewNotFoundError("card not found")).
 		Once()
 
-	paymentService := service.NewPaymentServiceMock(t)
-	processPayment := NewDefaultProcessPayment(cardRepository, paymentService)
+	paymentService := service.NewIPaymentServiceMock(t)
+	processPayment := NewProcessPayment(cardRepository, paymentService)
 
-	output, err := processPayment.Execute(ctx, input)
+	output, err := processPayment.Execute(ctx, &input)
 	assert.Nil(t, output)
 
 	var w *core_errors.NotFoundError
-	assert.ErrorAs(t, err, &w)
+	require.ErrorAs(t, err, &w)
 
-	err = errors.Unwrap(w)
-	assert.EqualError(t, err, "card not found")
+	assert.Equal(t, w.Message, "card not found")
 }
 
 func TestProcessPaymentWithInvalidPurchaseData(t *testing.T) {
@@ -100,7 +99,7 @@ func TestProcessPaymentWithInvalidPurchaseData(t *testing.T) {
 	input := ProcessPaymentInput{
 		CardToken:            card.Token,
 		PurchaseValue:        0,
-		PurchaseItens:        []string{""},
+		PurchaseItems:        []string{""},
 		PurchaseInstallments: 0,
 		StoreIdentification:  "Identification",
 		StoreAddress:         "Address",
@@ -108,31 +107,31 @@ func TestProcessPaymentWithInvalidPurchaseData(t *testing.T) {
 		AcquirerName:         "Acquirer",
 	}
 
-	cardRepository := repository.NewCardRepositoryMock(t)
+	cardRepository := repository.NewICardRepositoryMock(t)
 	cardRepository.
 		EXPECT().
 		FindCard(ctx, input.CardToken).
 		Return(card, nil).
 		Once()
 
-	paymentService := service.NewPaymentServiceMock(t)
-	processPayment := NewDefaultProcessPayment(cardRepository, paymentService)
+	paymentService := service.NewIPaymentServiceMock(t)
+	processPayment := NewProcessPayment(cardRepository, paymentService)
 
-	output, err := processPayment.Execute(ctx, input)
+	output, err := processPayment.Execute(ctx, &input)
 	assert.Nil(t, output)
 
 	var w *core_errors.ValidationError
-	assert.ErrorAs(t, err, &w)
+	require.ErrorAs(t, err, &w)
 
-	errs := w.Unwrap()
-	assert.Equal(t, 3, len(errs))
+	msgs := w.Messages
+	assert.Equal(t, 3, len(msgs))
 
-	for i, err := range []error{
-		entity.ErrorPurchaseValueIsInvalid,
-		entity.ErrorPurchaseItemsIsInvalid,
-		entity.ErrorPurchaseInstallmentsIsInvalid,
+	for i, msg := range []string{
+		"purchase value is invalid",
+		"purchase items is invalid",
+		"purchase installments is invalid",
 	} {
-		assert.ErrorIs(t, err, errs[i])
+		assert.Equal(t, msg, msgs[i])
 	}
 }
 
@@ -143,7 +142,7 @@ func TestProcessPaymentWithInvalidStoreData(t *testing.T) {
 	input := ProcessPaymentInput{
 		CardToken:            card.Token,
 		PurchaseValue:        4.99,
-		PurchaseItens:        []string{"Item 1", "Item 2"},
+		PurchaseItems:        []string{"Item 1", "Item 2"},
 		PurchaseInstallments: 2,
 		StoreIdentification:  "",
 		StoreAddress:         "",
@@ -151,31 +150,31 @@ func TestProcessPaymentWithInvalidStoreData(t *testing.T) {
 		AcquirerName:         "Acquirer",
 	}
 
-	cardRepository := repository.NewCardRepositoryMock(t)
+	cardRepository := repository.NewICardRepositoryMock(t)
 	cardRepository.
 		EXPECT().
 		FindCard(ctx, input.CardToken).
 		Return(card, nil).
 		Once()
 
-	paymentService := service.NewPaymentServiceMock(t)
-	processPayment := NewDefaultProcessPayment(cardRepository, paymentService)
+	paymentService := service.NewIPaymentServiceMock(t)
+	processPayment := NewProcessPayment(cardRepository, paymentService)
 
-	output, err := processPayment.Execute(ctx, input)
+	output, err := processPayment.Execute(ctx, &input)
 	assert.Nil(t, output)
 
 	var w *core_errors.ValidationError
-	assert.ErrorAs(t, err, &w)
+	require.ErrorAs(t, err, &w)
 
-	errs := w.Unwrap()
-	assert.Equal(t, 3, len(errs))
+	msgs := w.Messages
+	assert.Equal(t, 3, len(msgs))
 
-	for i, err := range []error{
-		entity.ErrorStoreIdentificationIsRequired,
-		entity.ErrorStoreAddressIsRequired,
-		entity.ErrorStoreCepIsRequired,
+	for i, msg := range []string{
+		"store identification is required",
+		"store address is required",
+		"store cep is required",
 	} {
-		assert.ErrorIs(t, err, errs[i])
+		assert.Equal(t, msg, msgs[i])
 	}
 }
 
@@ -186,7 +185,7 @@ func TestProcessPaymentWithInvalidAcquirer(t *testing.T) {
 	input := ProcessPaymentInput{
 		CardToken:            card.Token,
 		PurchaseValue:        4.99,
-		PurchaseItens:        []string{"Item 1", "Item 2"},
+		PurchaseItems:        []string{"Item 1", "Item 2"},
 		PurchaseInstallments: 2,
 		StoreIdentification:  "Identification",
 		StoreAddress:         "Address",
@@ -194,27 +193,29 @@ func TestProcessPaymentWithInvalidAcquirer(t *testing.T) {
 		AcquirerName:         "",
 	}
 
-	cardRepository := repository.NewCardRepositoryMock(t)
+	cardRepository := repository.NewICardRepositoryMock(t)
 	cardRepository.
 		EXPECT().
 		FindCard(ctx, input.CardToken).
 		Return(card, nil).
 		Once()
 
-	paymentService := service.NewPaymentServiceMock(t)
-	processPayment := NewDefaultProcessPayment(cardRepository, paymentService)
+	paymentService := service.NewIPaymentServiceMock(t)
+	processPayment := NewProcessPayment(cardRepository, paymentService)
 
-	output, err := processPayment.Execute(ctx, input)
+	output, err := processPayment.Execute(ctx, &input)
 	assert.Nil(t, output)
 
 	var w *core_errors.ValidationError
-	assert.ErrorAs(t, err, &w)
+	require.ErrorAs(t, err, &w)
 
-	errs := w.Unwrap()
-	assert.Equal(t, 1, len(errs))
+	msgs := w.Messages
+	assert.Equal(t, 1, len(msgs))
 
-	for i, err := range []error{entity.ErrorAcquirerNameIsRequired} {
-		assert.ErrorIs(t, err, errs[i])
+	for i, msg := range []string{
+		"acquirer name is required",
+	} {
+		assert.Equal(t, msg, msgs[i])
 	}
 }
 
@@ -225,7 +226,7 @@ func TestProcessPaymentWithAcquirerError(t *testing.T) {
 	input := ProcessPaymentInput{
 		CardToken:            card.Token,
 		PurchaseValue:        4.99,
-		PurchaseItens:        []string{"Item 1", "Item 2"},
+		PurchaseItems:        []string{"Item 1", "Item 2"},
 		PurchaseInstallments: 2,
 		StoreIdentification:  "Identification",
 		StoreAddress:         "Address",
@@ -233,29 +234,28 @@ func TestProcessPaymentWithAcquirerError(t *testing.T) {
 		AcquirerName:         "Acquirer",
 	}
 
-	cardRepository := repository.NewCardRepositoryMock(t)
+	cardRepository := repository.NewICardRepositoryMock(t)
 	cardRepository.
 		EXPECT().
 		FindCard(ctx, input.CardToken).
 		Return(card, nil).
 		Once()
 
-	paymentService := service.NewPaymentServiceMock(t)
+	paymentService := service.NewIPaymentServiceMock(t)
 	paymentService.
 		EXPECT().
 		ProcessTransaction(ctx, mock.Anything).
-		Return(nil, core_errors.NewAcquirerError(503, errors.New("acquirer is unavailable"))).
+		Return(nil, core_errors.NewAcquirerError(503, "acquirer is unavailable")).
 		Once()
 
-	processPayment := NewDefaultProcessPayment(cardRepository, paymentService)
+	processPayment := NewProcessPayment(cardRepository, paymentService)
 
-	output, err := processPayment.Execute(ctx, input)
+	output, err := processPayment.Execute(ctx, &input)
 	assert.Nil(t, output)
 
 	var w *core_errors.AcquirerError
-	assert.ErrorAs(t, err, &w)
+	require.ErrorAs(t, err, &w)
 
-	err = errors.Unwrap(w)
 	assert.Equal(t, 503, w.Code)
-	assert.EqualError(t, err, "acquirer is unavailable")
+	assert.Equal(t, "acquirer is unavailable", w.Message)
 }

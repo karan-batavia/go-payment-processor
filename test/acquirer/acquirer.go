@@ -46,21 +46,30 @@ func App() *fiber.App {
 		return c.Next()
 	})
 
-	app.Post("/stone", handler(func(t *transaction) error {
+	app.Post("/cielo", handler(func(c *fiber.Ctx, t *transaction) error {
+		if c.Get("Api-Key") != "cielo-api-key" {
+			return errors.New("unauthorized")
+		}
 		if t.PurchaseValue > 100 {
 			return errors.New("the maximum purchase value should not exceed 100")
 		}
 		return nil
 	}))
 
-	app.Post("/cielo", handler(func(t *transaction) error {
+	app.Post("/rede", handler(func(c *fiber.Ctx, t *transaction) error {
+		if c.Get("Api-Key") != "rede-api-key" {
+			return errors.New("unauthorized")
+		}
 		if t.PurchaseValue > 500 {
 			return errors.New("the maximum purchase value should not exceed 500")
 		}
 		return nil
 	}))
 
-	app.Post("/rede", handler(func(t *transaction) error {
+	app.Post("/stone", handler(func(c *fiber.Ctx, t *transaction) error {
+		if c.Get("Api-Key") != "stone-api-key" {
+			return errors.New("unauthorized")
+		}
 		if t.PurchaseValue > 1000 {
 			return errors.New("the maximum purchase value should not exceed 1000")
 		}
@@ -70,7 +79,7 @@ func App() *fiber.App {
 	return app
 }
 
-func handler(process func(t *transaction) error) func(c *fiber.Ctx) error {
+func handler(process func(c *fiber.Ctx, t *transaction) error) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		var t transaction
 
@@ -85,13 +94,19 @@ func handler(process func(t *transaction) error) func(c *fiber.Ctx) error {
 			return c.JSON(&response{http.StatusBadRequest, "invalid request"})
 		}
 
-		err = process(&t)
-		if err != nil {
-			slog.Error(err.Error())
-			c.Status(http.StatusUnprocessableEntity)
-			return c.JSON(&response{http.StatusUnprocessableEntity, err.Error()})
+		err = process(c, &t)
+		if err == nil {
+			return c.JSON(&response{http.StatusOK, uuid.NewString()})
 		}
 
-		return c.JSON(&response{http.StatusOK, uuid.NewString()})
+		slog.Error(err.Error())
+
+		if err.Error() == "unauthorized" {
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(&response{http.StatusUnauthorized, err.Error()})
+		}
+
+		c.Status(http.StatusUnprocessableEntity)
+		return c.JSON(&response{http.StatusUnprocessableEntity, err.Error()})
 	}
 }

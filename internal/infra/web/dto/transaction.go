@@ -5,9 +5,8 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/sesaquecruz/go-payment-processor/internal/utils"
 )
-
-var validate = validator.New(validator.WithRequiredStructEnabled())
 
 type Card struct {
 	Token string `json:"token" validate:"required"`
@@ -37,7 +36,7 @@ type Transaction struct {
 }
 
 func (t *Transaction) Validate() error {
-	err := validate.Struct(t)
+	err := utils.GetValidator().Struct(t)
 	if err == nil {
 		return nil
 	}

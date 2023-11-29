@@ -30,6 +30,25 @@ services:
     build:
       context: .
       dockerfile: ./test/acquirer/cmd/Dockerfile
-    image: go-acquirer:latest
+    image: go-acquirer:compose
     ports:
       - "6061:6061"
+
+  payment-processor:
+    container_name: payment-processor
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: .
+    image: payment-processor:compose
+    environment:
+      DB_DSN: ppapp:ppapp123@postgres:5432/ppdb?sslmode=disable
+      CIELO_URL: http://acquirer:6061/cielo
+      REDE_URL: http://acquirer:6061/rede
+      STONE_URL: http://acquirer:6061/stone
+      CIELO_KEY: cielo-api-key
+      REDE_KEY: rede-api-key
+      STONE_KEY: stone-api-key
+    ports:
+      - "8080:8080"

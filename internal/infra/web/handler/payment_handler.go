@@ -5,7 +5,6 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/dto"
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/errors"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,14 +13,12 @@ type IPaymentHandler interface {
 }
 
 type PaymentHandler struct {
-	validate       *validator.Validate
 	processPayment usecase.IProcessPayment
 }
 
-func NewPaymentHandler(validate *validator.Validate, processPayment usecase.IProcessPayment) *PaymentHandler {
+func NewPaymentHandler(processPayment usecase.IProcessPayment) *PaymentHandler {
 	return &PaymentHandler{
 		processPayment: processPayment,
-		validate:       validate,
 	}
 }
 

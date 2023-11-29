@@ -52,7 +52,7 @@ func NewPostgresContainer(ctx context.Context, migrationsPath string) (*Postgres
 		return nil, err
 	}
 
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+	dsn := fmt.Sprintf("%s:%s@%s:%s/%s?sslmode=disable",
 		username, password, host, port.Port(), database,
 	)
 
@@ -69,7 +69,7 @@ func (c *PostgresContainer) TerminateContainer() error {
 }
 
 func (c *PostgresContainer) ClearDB() error {
-	m, err := migrate.New("file://"+c.migrations, c.DSN)
+	m, err := migrate.New("file://"+c.migrations, "postgres://"+c.DSN)
 	if err != nil {
 		return err
 	}

@@ -18,6 +18,11 @@ packages:
       all: True
       dir: "test/mocks/core/usecase"
       outpkg: "usecase"
+  github.com/sesaquecruz/go-payment-processor/internal/acquirer:
+    config:
+      all: True
+      dir: "test/mocks/acquirer"
+      outpkg: "acquirer"
   github.com/sesaquecruz/go-payment-processor/internal/infra/web/handler:
     config:
       all: True

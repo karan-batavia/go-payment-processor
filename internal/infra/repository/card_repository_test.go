@@ -1,4 +1,4 @@
-package database
+package repository
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/sesaquecruz/go-payment-processor/internal/core/entity"
 	"github.com/sesaquecruz/go-payment-processor/internal/core/errors"
+	"github.com/sesaquecruz/go-payment-processor/internal/infra/connection"
 	"github.com/sesaquecruz/go-payment-processor/test/testcontainers"
 
 	"github.com/stretchr/testify/suite"
@@ -27,18 +28,13 @@ func (s *CardRepositoryTestSuite) SetupSuite() {
 	pgContainer, err := testcontainers.NewPostgresContainer(ctx, migrationsPath)
 	s.Require().Nil(err)
 
-	db, err := sql.Open("postgres", pgContainer.DSN)
+	db, err := connection.DBConnection(pgContainer.DSN)
 	s.Require().Nil(err)
 
 	s.ctx = ctx
 	s.db = db
 	s.pgContainer = pgContainer
 	s.cardRepository = NewCardRepository(db)
-}
-
-func (s *CardRepositoryTestSuite) TearDownSuite() {
-	err := s.pgContainer.TerminateContainer()
-	s.Require().Nil(err)
 }
 
 func (s *CardRepositoryTestSuite) TestFindCards() {
@@ -132,6 +128,11 @@ func (s *CardRepositoryTestSuite) TestFindCards() {
 			s.Equal(tc.Expected.Err.Message, e.Message)
 		})
 	}
+}
+
+func (s *CardRepositoryTestSuite) TearDownSuite() {
+	err := s.pgContainer.TerminateContainer()
+	s.Require().Nil(err)
 }
 
 func TestCardRepositoryTestSuite(t *testing.T) {

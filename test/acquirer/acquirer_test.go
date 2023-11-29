@@ -11,9 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStoneAcquirer(t *testing.T) {
+func TestCieloAcquirer(t *testing.T) {
 	app := App()
-	url := "/stone"
+	url := "/cielo"
+	key := "cielo-api-key"
 
 	t.Run("with transaction value less than or equal to 100", func(t *testing.T) {
 		reqData := createTransaction(100)
@@ -21,6 +22,7 @@ func TestStoneAcquirer(t *testing.T) {
 		assert.Nil(t, err)
 
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		req.Header.Set("Api-Key", key)
 		req.Header.Set("Content-Type", "application/json")
 		assert.Nil(t, err)
 
@@ -49,6 +51,7 @@ func TestStoneAcquirer(t *testing.T) {
 		assert.Nil(t, err)
 
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		req.Header.Set("Api-Key", key)
 		req.Header.Set("Content-Type", "application/json")
 		assert.Nil(t, err)
 
@@ -70,9 +73,10 @@ func TestStoneAcquirer(t *testing.T) {
 	})
 }
 
-func TestCieloAcquirer(t *testing.T) {
+func TestRedeAcquirer(t *testing.T) {
 	app := App()
-	url := "/cielo"
+	url := "/rede"
+	key := "rede-api-key"
 
 	t.Run("with transaction value less than or equal to 500", func(t *testing.T) {
 		reqData := createTransaction(500)
@@ -80,6 +84,7 @@ func TestCieloAcquirer(t *testing.T) {
 		assert.Nil(t, err)
 
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		req.Header.Set("Api-Key", key)
 		req.Header.Set("Content-Type", "application/json")
 		assert.Nil(t, err)
 
@@ -108,6 +113,7 @@ func TestCieloAcquirer(t *testing.T) {
 		assert.Nil(t, err)
 
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		req.Header.Set("Api-Key", key)
 		req.Header.Set("Content-Type", "application/json")
 		assert.Nil(t, err)
 
@@ -129,9 +135,10 @@ func TestCieloAcquirer(t *testing.T) {
 	})
 }
 
-func TestRedeAcquirer(t *testing.T) {
+func TestStoneAcquirer(t *testing.T) {
 	app := App()
-	url := "/rede"
+	url := "/stone"
+	key := "stone-api-key"
 
 	t.Run("with transaction value less than or equal to 1000", func(t *testing.T) {
 		reqData := createTransaction(1000)
@@ -139,6 +146,7 @@ func TestRedeAcquirer(t *testing.T) {
 		assert.Nil(t, err)
 
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		req.Header.Set("Api-Key", key)
 		req.Header.Set("Content-Type", "application/json")
 		assert.Nil(t, err)
 
@@ -167,6 +175,7 @@ func TestRedeAcquirer(t *testing.T) {
 		assert.Nil(t, err)
 
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		req.Header.Set("Api-Key", key)
 		req.Header.Set("Content-Type", "application/json")
 		assert.Nil(t, err)
 

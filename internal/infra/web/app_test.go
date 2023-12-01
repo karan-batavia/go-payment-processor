@@ -13,7 +13,6 @@ import (
 	core_errors "github.com/sesaquecruz/go-payment-processor/internal/core/errors"
 	"github.com/sesaquecruz/go-payment-processor/internal/core/usecase"
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/dto"
-	web_errors "github.com/sesaquecruz/go-payment-processor/internal/infra/web/errors"
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/handler"
 	usecaseMocks "github.com/sesaquecruz/go-payment-processor/test/mocks/core/usecase"
 
@@ -24,7 +23,7 @@ import (
 )
 
 func TestProcessPayment(t *testing.T) {
-	endpoint := "/api/v1/payment/process"
+	endpoint := "/api/v1/payments/process"
 
 	t.Run("with valid transaction should return payment data", func(t *testing.T) {
 		transaction := createTransactionDto()
@@ -35,14 +34,14 @@ func TestProcessPayment(t *testing.T) {
 			EXPECT().
 			Execute(mock.Anything, mock.Anything).
 			Run(func(ctx context.Context, input *usecase.ProcessPaymentInput) {
-				assert.Equal(t, transaction.Card.Token, input.CardToken)
-				assert.Equal(t, transaction.Purchase.Value, input.PurchaseValue)
-				assert.Equal(t, transaction.Purchase.Itens, input.PurchaseItems)
-				assert.Equal(t, transaction.Purchase.Installments, input.PurchaseInstallments)
-				assert.Equal(t, transaction.Store.Identification, input.StoreIdentification)
-				assert.Equal(t, transaction.Store.Address, input.StoreAddress)
-				assert.Equal(t, transaction.Store.Cep, input.StoreCep)
-				assert.Equal(t, transaction.Acquirer.Name, input.AcquirerName)
+				assert.Equal(t, transaction.CardToken, input.CardToken)
+				assert.Equal(t, transaction.PurchaseValue, input.PurchaseValue)
+				assert.Equal(t, transaction.PurchaseItens, input.PurchaseItems)
+				assert.Equal(t, transaction.PurchaseInstallments, input.PurchaseInstallments)
+				assert.Equal(t, transaction.StoreIdentification, input.StoreIdentification)
+				assert.Equal(t, transaction.StoreAddress, input.StoreAddress)
+				assert.Equal(t, transaction.StoreCep, input.StoreCep)
+				assert.Equal(t, transaction.AcquirerName, input.AcquirerName)
 			}).
 			Return(&usecase.ProcessPaymentOutput{
 				PaymentId: expectedPayment.Id,
@@ -88,7 +87,7 @@ func TestProcessPayment(t *testing.T) {
 		resBody, err := io.ReadAll(res.Body)
 		require.Nil(t, err)
 
-		var httpErr *web_errors.HttpError
+		var httpErr *dto.HttpError
 		err = json.Unmarshal(resBody, &httpErr)
 		require.Nil(t, err)
 		assert.Equal(t, http.StatusBadRequest, httpErr.Code)
@@ -111,7 +110,7 @@ func TestProcessPayment(t *testing.T) {
 		resBody, err := io.ReadAll(res.Body)
 		require.Nil(t, err)
 
-		var httpErr *web_errors.HttpError
+		var httpErr *dto.HttpError
 		err = json.Unmarshal(resBody, &httpErr)
 		require.Nil(t, err)
 		assert.Equal(t, http.StatusBadRequest, httpErr.Code)
@@ -154,7 +153,7 @@ func TestProcessPayment(t *testing.T) {
 		resBody, err := io.ReadAll(res.Body)
 		require.Nil(t, err)
 
-		var httpErr *web_errors.HttpError
+		var httpErr *dto.HttpError
 		err = json.Unmarshal(resBody, &httpErr)
 		require.Nil(t, err)
 		assert.Equal(t, http.StatusUnprocessableEntity, httpErr.Code)
@@ -188,7 +187,7 @@ func TestProcessPayment(t *testing.T) {
 		resBody, err := io.ReadAll(res.Body)
 		require.Nil(t, err)
 
-		var httpErr *web_errors.HttpError
+		var httpErr *dto.HttpError
 		err = json.Unmarshal(resBody, &httpErr)
 		require.Nil(t, err)
 		assert.Equal(t, http.StatusNotFound, httpErr.Code)
@@ -222,7 +221,7 @@ func TestProcessPayment(t *testing.T) {
 		resBody, err := io.ReadAll(res.Body)
 		require.Nil(t, err)
 
-		var httpErr *web_errors.HttpError
+		var httpErr *dto.HttpError
 		err = json.Unmarshal(resBody, &httpErr)
 		require.Nil(t, err)
 		assert.Equal(t, http.StatusTooManyRequests, httpErr.Code)
@@ -256,7 +255,7 @@ func TestProcessPayment(t *testing.T) {
 		resBody, err := io.ReadAll(res.Body)
 		require.Nil(t, err)
 
-		var httpErr *web_errors.HttpError
+		var httpErr *dto.HttpError
 		err = json.Unmarshal(resBody, &httpErr)
 		require.Nil(t, err)
 		assert.Equal(t, http.StatusInternalServerError, httpErr.Code)
@@ -266,21 +265,13 @@ func TestProcessPayment(t *testing.T) {
 
 func createTransactionDto() *dto.Transaction {
 	return &dto.Transaction{
-		Card: dto.Card{
-			Token: "A card token",
-		},
-		Purchase: dto.Purchase{
-			Value:        9.99,
-			Itens:        []string{"Item 1"},
-			Installments: 2,
-		},
-		Store: dto.Store{
-			Identification: "A store identification",
-			Address:        "A store address",
-			Cep:            "A store cep",
-		},
-		Acquirer: dto.Acquirer{
-			Name: "An acquirer name",
-		},
+		CardToken:            "A card token",
+		PurchaseValue:        9.99,
+		PurchaseItens:        []string{"Item 1"},
+		PurchaseInstallments: 2,
+		StoreIdentification:  "A store identification",
+		StoreAddress:         "A store address",
+		StoreCep:             "A store cep",
+		AcquirerName:         "An acquirer name",
 	}
 }

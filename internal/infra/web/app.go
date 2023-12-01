@@ -4,6 +4,9 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/handler"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
+
+	_ "github.com/sesaquecruz/go-payment-processor/docs"
 )
 
 func InitApp(
@@ -13,7 +16,9 @@ func InitApp(
 
 	v1 := app.Group("/api/v1")
 	{
-		payment := v1.Group("/payment")
+		v1.Get("/swagger/*", swagger.HandlerDefault)
+
+		payment := v1.Group("/payments")
 		{
 			payment.Post("/process", paymentHandler.ProcessPayment)
 		}

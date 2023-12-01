@@ -10,6 +10,19 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/service"
 )
 
+//	@title			Payment Processor
+//	@version		1.0.0
+//	@description	A Rest API for Payment Processing.
+//	@termsOfService	https://github.com/sesaquecruz/go-payment-processor
+
+//	@contact.name	Support
+//	@contact.url	https://github.com/sesaquecruz/go-payment-processor
+
+//	@license.name	MIT
+//	@license.url	https://github.com/sesaquecruz/go-payment-processor
+
+//	@BasePath	/api/v1
+
 func main() {
 	cfg := config.GetConfig()
 

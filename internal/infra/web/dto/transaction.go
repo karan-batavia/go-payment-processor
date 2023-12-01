@@ -2,37 +2,22 @@ package dto
 
 import (
 	"fmt"
-	"strings"
+
+	web_errors "github.com/sesaquecruz/go-payment-processor/internal/infra/web/errors"
+	"github.com/sesaquecruz/go-payment-processor/internal/utils"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/sesaquecruz/go-payment-processor/internal/utils"
 )
 
-type Card struct {
-	Token string `json:"token" validate:"required"`
-}
-
-type Purchase struct {
-	Value        float64  `json:"value"        validate:"required"`
-	Itens        []string `json:"items"        validate:"required"`
-	Installments int      `json:"installments" validate:"required"`
-}
-
-type Store struct {
-	Identification string `json:"identification" validate:"required"`
-	Address        string `json:"address"        validate:"required"`
-	Cep            string `json:"cep"            validate:"required"`
-}
-
-type Acquirer struct {
-	Name string `json:"name" validate:"required"`
-}
-
 type Transaction struct {
-	Card     Card     `json:"card"`
-	Purchase Purchase `json:"purchase"`
-	Store    Store    `json:"store"`
-	Acquirer Acquirer `json:"acquirer"`
+	CardToken            string   `json:"card_token"            validate:"required"`
+	PurchaseValue        float64  `json:"purchase_value"        validate:"required"`
+	PurchaseItens        []string `json:"purchase_items"        validate:"required"`
+	PurchaseInstallments int      `json:"purchase_installments" validate:"required"`
+	StoreIdentification  string   `json:"store_identification"  validate:"required"`
+	StoreAddress         string   `json:"store_address"         validate:"required"`
+	StoreCep             string   `json:"store_cep"             validate:"required"`
+	AcquirerName         string   `json:"acquirer_name"         validate:"required"`
 }
 
 func (t *Transaction) Validate() error {
@@ -44,10 +29,10 @@ func (t *Transaction) Validate() error {
 	errs := err.(validator.ValidationErrors)
 	msgs := make([]string, 0, len(errs))
 
-	for _, oe := range errs {
-		msg := fmt.Sprintf("%s is required", strings.ToLower(strings.ReplaceAll(oe.Namespace(), ".", " ")))
+	for _, e := range errs {
+		msg := fmt.Sprintf("%s is required", utils.GetNamespaceError(e))
 		msgs = append(msgs, msg)
 	}
 
-	return NewError(msgs...)
+	return web_errors.NewError(msgs...)
 }

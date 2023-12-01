@@ -1,11 +1,11 @@
-package errors
+package dto
 
 import (
 	"encoding/json"
 	"net/http"
 
 	core_errors "github.com/sesaquecruz/go-payment-processor/internal/core/errors"
-	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/dto"
+	web_errors "github.com/sesaquecruz/go-payment-processor/internal/infra/web/errors"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -29,7 +29,7 @@ func NewHttpError(c *fiber.Ctx, err error) error {
 		httpErr.Message = []string{"Bad Request"}
 		break
 
-	case *dto.Error:
+	case *web_errors.Error:
 		httpErr.Code = http.StatusBadRequest
 		httpErr.Message = t.Messages
 		break

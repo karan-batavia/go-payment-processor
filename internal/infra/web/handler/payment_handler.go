@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/sesaquecruz/go-payment-processor/internal/core/usecase"
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/dto"
-	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/errors"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,32 +21,45 @@ func NewPaymentHandler(processPayment usecase.IProcessPayment) *PaymentHandler {
 	}
 }
 
+// Process Payment godoc
+//
+// @Summary		Process a payment
+// @Description	Process a payment transaction.
+// @Tags		payments
+// @Accept		json
+// @Produce		json
+// @Param		transaction			body			dto.Transaction		true	"Transaction"
+// @Success		200	{object} 		dto.Payment
+// @Failure		400	{object}		dto.HttpError
+// @Failure		404	{object}		dto.HttpError
+// @Failure		422	{object}		dto.HttpError
+// @Router		/payments/process	[post]
 func (h *PaymentHandler) ProcessPayment(c *fiber.Ctx) error {
 	transaction := dto.Transaction{}
 	err := c.BodyParser(&transaction)
 	if err != nil {
-		return errors.NewHttpError(c, err)
+		return dto.NewHttpError(c, err)
 	}
 
 	err = transaction.Validate()
 	if err != nil {
-		return errors.NewHttpError(c, err)
+		return dto.NewHttpError(c, err)
 	}
 
 	input := usecase.ProcessPaymentInput{
-		CardToken:            transaction.Card.Token,
-		PurchaseValue:        transaction.Purchase.Value,
-		PurchaseItems:        transaction.Purchase.Itens,
-		PurchaseInstallments: transaction.Purchase.Installments,
-		StoreIdentification:  transaction.Store.Identification,
-		StoreAddress:         transaction.Store.Address,
-		StoreCep:             transaction.Store.Cep,
-		AcquirerName:         transaction.Acquirer.Name,
+		CardToken:            transaction.CardToken,
+		PurchaseValue:        transaction.PurchaseValue,
+		PurchaseItems:        transaction.PurchaseItens,
+		PurchaseInstallments: transaction.PurchaseInstallments,
+		StoreIdentification:  transaction.StoreIdentification,
+		StoreAddress:         transaction.StoreAddress,
+		StoreCep:             transaction.StoreCep,
+		AcquirerName:         transaction.AcquirerName,
 	}
 
 	output, err := h.processPayment.Execute(c.Context(), &input)
 	if err != nil {
-		return errors.NewHttpError(c, err)
+		return dto.NewHttpError(c, err)
 	}
 
 	payment := dto.NewPayment(output.PaymentId)

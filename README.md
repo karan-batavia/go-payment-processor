@@ -30,9 +30,9 @@ http://localhost:8080/api/v1/swagger/index.html
 
 ### Preregistered acquirers:
 
-- cielo (max supported transaction value 100.00)
-- rede  (max supported transaction value 500.00)
-- stone (max supported transaction value 1000.00)
+- cielo	(max supported transaction value 100.00)
+- rede	(max supported transaction value 500.00)
+- stone	(max supported transaction value 1000.00)
 
 If the transaction value is greater than the max supported value by the transaction acquirer, it will fail.
 

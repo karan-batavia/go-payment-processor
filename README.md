@@ -21,20 +21,22 @@ cd go-payment-processor
 docker compose up -d --build
 ```
 
-4. Access the API Documentation at:
+4. Access the API Documentation for requests and response information at:
 ```
 http://localhost:8080/api/v1/swagger/index.html
 ```
 
 ## Predefined Test Data
 
-Preregistered acquirers:
+### Preregistered acquirers:
 
-- cielo
-- rede
-- stone
+- cielo (max supported transaction value 100.00)
+- rede  (max supported transaction value 500.00)
+- stone (max supported transaction value 1000.00)
 
-Preregistered card tokens:
+If the transaction value is greater than the max supported value by the transaction acquirer, it will fail.
+
+### Preregistered card tokens:
 
 - 461c9432d4d7eca7ba32b783aa22ca5c89e4f396288de5128b73b461c42d4f40
 - 7d2cd4f89ffe5374013d68c64ec104182366f786a377da1d3103db201149d3b5

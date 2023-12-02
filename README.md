@@ -1,6 +1,6 @@
 # Solution for Golang Software Engineer Challenge - Pagar.me
 
-This repository contains a solution developed for the Software Engineer Challenge proposed by Pagar.me. The goal was to build a service that simulates the processing of payment transactions, adhering to PCI security guidelines.
+This repository contains one solution for the Software Engineer Challenge proposed by Pagar.me. The goal was to build a service to processing payment transactions from other systems.
 
 The challenge description can be found at [Golang Software Engineer Challenge - Pagar.me](https://github.com/pagarme/vagas/blob/master/desafios/software-engineer-golang/README.md).
 
@@ -28,13 +28,13 @@ http://localhost:8080/api/v1/swagger/index.html
 
 ## Predefined Test Data
 
-The preregistered acquirers are:
+Preregistered acquirers:
 
 - cielo
 - rede
 - stone
 
-The preregistered card tokens are:
+Preregistered card tokens:
 
 - 461c9432d4d7eca7ba32b783aa22ca5c89e4f396288de5128b73b461c42d4f40
 - 7d2cd4f89ffe5374013d68c64ec104182366f786a377da1d3103db201149d3b5

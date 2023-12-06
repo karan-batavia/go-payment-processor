@@ -45,7 +45,7 @@ If the transaction value is greater than the max supported value by the transact
 - f8a8a91d9626b66a74ff7c11b5f1c2cc59a103f5b2a3119b4729a70b25304074
 - cc89fefc83d423395b11998646cc7eb7c32c04ece114d1373c3a519fbb612724
 
-The test cards data can be found at [Test Cards](.docker/test-data/cards.up.sql)
+The test card data can be found at [Test Cards](.docker/test-data/cards.sql)
 
 ## Tech Stack
 

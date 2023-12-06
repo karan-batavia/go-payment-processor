@@ -3,7 +3,7 @@ name: CD Pipeline
 on:
   push:
     branches:
-      - release/*
+      - release-*
   workflow_dispatch:
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set Up Go
         uses: actions/setup-go@v4
         with:
@@ -25,7 +25,7 @@ jobs:
     needs: test
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set Up Go
         uses: actions/setup-go@v4
         with:
@@ -38,20 +38,25 @@ jobs:
     needs: build
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
-      - name: Login to DockerHub
-        uses: docker/login-action@v2.2.0
+        uses: actions/checkout@v4
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Set Image Version
-        run: |
-          echo IMAGE_VERSION=$(echo ${{ github.ref_name }} | sed "s/^release\///") >> $GITHUB_ENV
-          echo "Image Version - $IMAGE_VERSION"
-      - name: Push Image
-        uses: docker/build-push-action@v4.1.1
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHP_TOKEN }}
+      - name: Set Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+      - name: Build and Push Image
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          build-args: VERSION=${{ env.IMAGE_VERSION }}
-          tags: ${{ vars.DOCKERHUB_REPOSITORY }}:${{ env.IMAGE_VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

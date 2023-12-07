@@ -1,0 +1,101 @@
+basePath: /api/v1
+definitions:
+  dto.HttpError:
+    properties:
+      code:
+        type: integer
+      message:
+        items:
+          type: string
+        type: array
+    type: object
+  dto.Payment:
+    properties:
+      id:
+        type: string
+    type: object
+  dto.Transaction:
+    properties:
+      acquirer_name:
+        type: string
+      card_token:
+        type: string
+      purchase_installments:
+        type: integer
+      purchase_items:
+        items:
+          type: string
+        type: array
+      purchase_value:
+        type: number
+      store_address:
+        type: string
+      store_cep:
+        type: string
+      store_identification:
+        type: string
+    required:
+    - acquirer_name
+    - card_token
+    - purchase_installments
+    - purchase_items
+    - purchase_value
+    - store_address
+    - store_cep
+    - store_identification
+    type: object
+info:
+  contact:
+    name: Support
+    url: https://github.com/sesaquecruz/go-payment-processor
+  description: A Rest API for Payment Processing.
+  license:
+    name: MIT
+    url: https://github.com/sesaquecruz/go-payment-processor
+  termsOfService: https://github.com/sesaquecruz/go-payment-processor
+  title: Payment Processor
+  version: 1.0.0
+paths:
+  /payments/process:
+    post:
+      consumes:
+      - application/json
+      description: Process a payment transaction.
+      parameters:
+      - description: Transaction
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Transaction'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Payment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HttpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/dto.HttpError'
+      security:
+      - Bearer token: []
+      summary: Process a payment
+      tags:
+      - payments
+securityDefinitions:
+  Bearer token:
+    description: Authorization Token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

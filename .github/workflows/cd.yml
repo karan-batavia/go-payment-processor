@@ -1,0 +1,62 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - release-*
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Runner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set Up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+      - name: Run Tests
+        run: go test -race -v ./...
+  build:
+    name: Build Runner
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set Up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+      - name: Run Build
+        run: go build -v ./...
+  deploy:
+    name: Deploy Runner
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHP_TOKEN }}
+      - name: Set Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+      - name: Build and Push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

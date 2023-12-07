@@ -4,6 +4,7 @@
 package di
 
 import (
+	"crypto/rsa"
 	"database/sql"
 
 	irepository "github.com/sesaquecruz/go-payment-processor/internal/core/repository"
@@ -38,7 +39,7 @@ var setPaymentHandler = wire.NewSet(
 	wire.Bind(new(handler.IPaymentHandler), new(*handler.PaymentHandler)),
 )
 
-func NewApp(db *sql.DB, options ...service.PaymentOption) *fiber.App {
+func NewApp(db *sql.DB, authPublicKey *rsa.PublicKey, options ...service.PaymentOption) *fiber.App {
 	wire.Build(
 		setCardRepository,
 		setPaymentService,

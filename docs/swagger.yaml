@@ -87,7 +87,15 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/dto.HttpError'
+      security:
+      - Bearer token: []
       summary: Process a payment
       tags:
       - payments
+securityDefinitions:
+  Bearer token:
+    description: Authorization Token
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

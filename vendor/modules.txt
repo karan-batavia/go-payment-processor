@@ -8,6 +8,9 @@ github.com/Azure/go-ansiterm/winterm
 # github.com/KyleBanks/depth v1.2.1
 ## explicit
 github.com/KyleBanks/depth
+# github.com/MicahParks/keyfunc/v2 v2.1.0
+## explicit; go 1.18
+github.com/MicahParks/keyfunc/v2
 # github.com/Microsoft/go-winio v0.6.1
 ## explicit; go 1.17
 github.com/Microsoft/go-winio
@@ -121,7 +124,10 @@ github.com/go-playground/universal-translator
 # github.com/go-playground/validator/v10 v10.16.0
 ## explicit; go 1.18
 github.com/go-playground/validator/v10
-# github.com/gofiber/fiber/v2 v2.50.0
+# github.com/gofiber/contrib/jwt v1.0.8
+## explicit; go 1.18
+github.com/gofiber/contrib/jwt
+# github.com/gofiber/fiber/v2 v2.51.0
 ## explicit; go 1.20
 github.com/gofiber/fiber/v2
 github.com/gofiber/fiber/v2/internal/schema
@@ -135,6 +141,9 @@ github.com/gofiber/swagger
 # github.com/gogo/protobuf v1.3.2
 ## explicit; go 1.15
 github.com/gogo/protobuf/proto
+# github.com/golang-jwt/jwt/v5 v5.2.0
+## explicit; go 1.18
+github.com/golang-jwt/jwt/v5
 # github.com/golang-migrate/migrate/v4 v4.16.2
 ## explicit; go 1.18
 github.com/golang-migrate/migrate/v4

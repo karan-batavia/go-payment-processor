@@ -26,6 +26,16 @@ docker compose up -d --build
 http://localhost:8080/api/v1/swagger/index.html
 ```
 
+5. Get the API Authorization Token from the Auth Service at:
+```
+http://localhost:6062/token
+```
+
+Remember to add the prefix Bearer to the token when using the API Documentation, for example:
+```
+Bearer token-value
+```
+
 ## Predefined Test Data
 
 ### Preregistered acquirers:

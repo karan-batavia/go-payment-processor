@@ -14,6 +14,7 @@ import (
 	"github.com/sesaquecruz/go-payment-processor/internal/core/usecase"
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/dto"
 	"github.com/sesaquecruz/go-payment-processor/internal/infra/web/handler"
+	"github.com/sesaquecruz/go-payment-processor/test/authentication"
 	usecaseMocks "github.com/sesaquecruz/go-payment-processor/test/mocks/core/usecase"
 
 	"github.com/google/uuid"
@@ -23,7 +24,25 @@ import (
 )
 
 func TestProcessPayment(t *testing.T) {
+	authPublicKey := &authentication.PublicKey
+	authToken, err := createAuthToken()
+	require.Nil(t, err)
+
 	endpoint := "/api/v1/payments/process"
+
+	t.Run("with invalid auth token", func(t *testing.T) {
+		processPaymentUsecase := usecaseMocks.NewIProcessPaymentMock(t)
+		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
+		app := InitApp(authPublicKey, paymentHandler)
+
+		req := httptest.NewRequest("POST", endpoint, nil)
+		req.Header.Set("Authorization", "a token")
+		req.Header.Set("Content-Type", "application/json")
+
+		res, err := app.Test(req, -1)
+		require.Nil(t, err)
+		assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	})
 
 	t.Run("with valid transaction should return payment data", func(t *testing.T) {
 		transaction := createTransactionDto()
@@ -49,12 +68,13 @@ func TestProcessPayment(t *testing.T) {
 			Once()
 
 		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
-		app := InitApp(paymentHandler)
+		app := InitApp(authPublicKey, paymentHandler)
 
 		reqBody, err := json.Marshal(&transaction)
 		require.Nil(t, err)
 
 		req := httptest.NewRequest("POST", endpoint, bytes.NewReader(reqBody))
+		req.Header.Set("Authorization", authToken)
 		req.Header.Set("Content-Type", "application/json")
 
 		res, err := app.Test(req, -1)
@@ -74,9 +94,10 @@ func TestProcessPayment(t *testing.T) {
 	t.Run("with invalid json should return status bad request", func(t *testing.T) {
 		processPaymentUsecase := usecaseMocks.NewIProcessPaymentMock(t)
 		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
-		app := InitApp(paymentHandler)
+		app := InitApp(authPublicKey, paymentHandler)
 
 		req := httptest.NewRequest("POST", endpoint, nil)
+		req.Header.Set("Authorization", authToken)
 		req.Header.Set("Content-Type", "application/json")
 
 		res, err := app.Test(req, -1)
@@ -97,9 +118,10 @@ func TestProcessPayment(t *testing.T) {
 	t.Run("with empty transaction should return status bad request", func(t *testing.T) {
 		processPaymentUsecase := usecaseMocks.NewIProcessPaymentMock(t)
 		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
-		app := InitApp(paymentHandler)
+		app := InitApp(authPublicKey, paymentHandler)
 
 		req := httptest.NewRequest("POST", endpoint, bytes.NewReader([]byte("{}")))
+		req.Header.Set("Authorization", authToken)
 		req.Header.Set("Content-Type", "application/json")
 
 		res, err := app.Test(req, -1)
@@ -137,12 +159,13 @@ func TestProcessPayment(t *testing.T) {
 			Once()
 
 		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
-		app := InitApp(paymentHandler)
+		app := InitApp(authPublicKey, paymentHandler)
 
 		reqBody, err := json.Marshal(&transaction)
 		require.Nil(t, err)
 
 		req := httptest.NewRequest("POST", endpoint, bytes.NewReader(reqBody))
+		req.Header.Set("Authorization", authToken)
 		req.Header.Set("Content-Type", "application/json")
 
 		res, err := app.Test(req, -1)
@@ -171,12 +194,13 @@ func TestProcessPayment(t *testing.T) {
 			Once()
 
 		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
-		app := InitApp(paymentHandler)
+		app := InitApp(authPublicKey, paymentHandler)
 
 		reqBody, err := json.Marshal(&transaction)
 		require.Nil(t, err)
 
 		req := httptest.NewRequest("POST", endpoint, bytes.NewReader(reqBody))
+		req.Header.Set("Authorization", authToken)
 		req.Header.Set("Content-Type", "application/json")
 
 		res, err := app.Test(req, -1)
@@ -205,12 +229,13 @@ func TestProcessPayment(t *testing.T) {
 			Once()
 
 		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
-		app := InitApp(paymentHandler)
+		app := InitApp(authPublicKey, paymentHandler)
 
 		reqBody, err := json.Marshal(&transaction)
 		require.Nil(t, err)
 
 		req := httptest.NewRequest("POST", endpoint, bytes.NewReader(reqBody))
+		req.Header.Set("Authorization", authToken)
 		req.Header.Set("Content-Type", "application/json")
 
 		res, err := app.Test(req, -1)
@@ -239,12 +264,13 @@ func TestProcessPayment(t *testing.T) {
 			Once()
 
 		paymentHandler := handler.NewPaymentHandler(processPaymentUsecase)
-		app := InitApp(paymentHandler)
+		app := InitApp(authPublicKey, paymentHandler)
 
 		reqBody, err := json.Marshal(&transaction)
 		require.Nil(t, err)
 
 		req := httptest.NewRequest("POST", endpoint, bytes.NewReader(reqBody))
+		req.Header.Set("Authorization", authToken)
 		req.Header.Set("Content-Type", "application/json")
 
 		res, err := app.Test(req, -1)
@@ -261,6 +287,15 @@ func TestProcessPayment(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, httpErr.Code)
 		assert.Equal(t, []string{"internal server error"}, httpErr.Message)
 	})
+}
+
+func createAuthToken() (string, error) {
+	token, err := authentication.GetAuthToken()
+	if err != nil {
+		return "", err
+	}
+
+	return "Bearer " + token, nil
 }
 
 func createTransactionDto() *dto.Transaction {

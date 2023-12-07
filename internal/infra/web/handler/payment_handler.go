@@ -33,6 +33,7 @@ func NewPaymentHandler(processPayment usecase.IProcessPayment) *PaymentHandler {
 // @Failure		400	{object}		dto.HttpError
 // @Failure		404	{object}		dto.HttpError
 // @Failure		422	{object}		dto.HttpError
+// @Security	Bearer token
 // @Router		/payments/process	[post]
 func (h *PaymentHandler) ProcessPayment(c *fiber.Ctx) error {
 	transaction := dto.Transaction{}

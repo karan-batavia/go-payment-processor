@@ -25,6 +25,11 @@ const docTemplate = `{
     "paths": {
         "/payments/process": {
             "post": {
+                "security": [
+                    {
+                        "Bearer token": []
+                    }
+                ],
                 "description": "Process a payment transaction.",
                 "consumes": [
                     "application/json"
@@ -140,6 +145,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer token": {
+            "description": "Authorization Token",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

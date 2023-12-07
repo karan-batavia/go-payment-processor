@@ -6,18 +6,24 @@ import (
 )
 
 type Config struct {
-	DbDsn    string
-	CieloUrl string
-	RedeUrl  string
-	StoneUrl string
-	CieloKey string
-	RedeKey  string
-	StoneKey string
+	AuthPublicKey string
+	DbDsn         string
+	CieloUrl      string
+	RedeUrl       string
+	StoneUrl      string
+	CieloKey      string
+	RedeKey       string
+	StoneKey      string
 }
 
 var config Config
 
 func init() {
+	authPublicKey, ok := os.LookupEnv("AUTH_PUBLIC_KEY")
+	if !ok || authPublicKey == "" {
+		log.Fatal("env var AUTH_PUBLIC_KEY is required")
+	}
+
 	dbDsn, ok := os.LookupEnv("DB_DSN")
 	if !ok || dbDsn == "" {
 		log.Fatal("env var DB_DSN is required")
@@ -54,13 +60,14 @@ func init() {
 	}
 
 	config = Config{
-		DbDsn:    dbDsn,
-		CieloUrl: cieloUrl,
-		RedeUrl:  redeUrl,
-		StoneUrl: stoneUrl,
-		CieloKey: cieloKey,
-		RedeKey:  redeKey,
-		StoneKey: stoneKey,
+		AuthPublicKey: authPublicKey,
+		DbDsn:         dbDsn,
+		CieloUrl:      cieloUrl,
+		RedeUrl:       redeUrl,
+		StoneUrl:      stoneUrl,
+		CieloKey:      cieloKey,
+		RedeKey:       redeKey,
+		StoneKey:      stoneKey,
 	}
 }
 

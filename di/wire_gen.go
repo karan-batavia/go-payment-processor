@@ -7,6 +7,7 @@
 package di
 
 import (
+	"crypto/rsa"
 	"database/sql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/wire"
@@ -21,12 +22,12 @@ import (
 
 // Injectors from wire.go:
 
-func NewApp(db *sql.DB, options ...service.PaymentOption) *fiber.App {
+func NewApp(db *sql.DB, authPublicKey *rsa.PublicKey, options ...service.PaymentOption) *fiber.App {
 	cardRepository := repository.NewCardRepository(db)
 	paymentService := service.NewPaymentService(options...)
 	processPayment := usecase.NewProcessPayment(cardRepository, paymentService)
 	paymentHandler := handler.NewPaymentHandler(processPayment)
-	app := web.InitApp(paymentHandler)
+	app := web.InitApp(authPublicKey, paymentHandler)
 	return app
 }
 

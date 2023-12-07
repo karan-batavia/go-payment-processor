@@ -5,18 +5,27 @@ services:
     container_name: acquirer
     build:
       context: .
-      dockerfile: ./test/acquirer/cmd/Dockerfile
+      dockerfile: ./test/acquirer/Dockerfile
     image: go-acquirer:local-compose
     ports:
       - "6061:6061"
+
+  authentication:
+    container_name: authentication
+    build:
+      context: .
+      dockerfile: ./test/authentication/Dockerfile
+    image: go-authentication:local-compose
+    ports:
+      - "6062:6062"
 
   postgres:
     container_name: postgres
     image: postgres:16.0-alpine
     environment:
-      POSTGRES_USER: ppapp
-      POSTGRES_PASSWORD: ppapp123
-      POSTGRES_DB: ppdb
+      - POSTGRES_USER=ppapp
+      - POSTGRES_PASSWORD=ppapp123
+      - POSTGRES_DB=ppdb
     ports:
       - "5432:5432"
     healthcheck:
@@ -45,13 +54,14 @@ services:
       context: .
     image: payment-processor:local-compose
     environment:
-      DB_DSN: ppapp:ppapp123@postgres:5432/ppdb?sslmode=disable
-      CIELO_URL: http://acquirer:6061/cielo
-      REDE_URL: http://acquirer:6061/rede
-      STONE_URL: http://acquirer:6061/stone
-      CIELO_KEY: cielo-api-key
-      REDE_KEY: rede-api-key
-      STONE_KEY: stone-api-key
+      - AUTH_PUBLIC_KEY=MIIBCgKCAQEAvpa5w4Vm8aOVCnI46O9f7Ixp3hir1TGgdo6p25ZHR/plk4NdtQI04TT2Uo7iCQD1FSJat7hYu0HYwsG5qMh1fZwi+GFf3Yqfxy5kpgUsatvC1wZglcccmV+qpL+Nj5bsaV7HrTyRPkru1twSXnOcAcZUesQdDo56otJfTDEvbdGBetbkapIkcjoWZHy39KPg4aWMlJ7GLpHAEvEVTh/6Impu/lUSZMy/V9D1IdgjKFmu0BF1nMLdxTAwZVU7YNiOxovQU6Hw/UlZRyVlVubzhSp5HA9dib/n0AaIv97VelgDBGo7OcWlISOb0kIz0VvZtgfXQItqz0tyvSEJAWWytQIDAQAB
+      - DB_DSN=ppapp:ppapp123@postgres:5432/ppdb?sslmode=disable
+      - CIELO_URL=http://acquirer:6061/cielo
+      - REDE_URL=http://acquirer:6061/rede
+      - STONE_URL=http://acquirer:6061/stone
+      - CIELO_KEY=cielo-api-key
+      - REDE_KEY=rede-api-key
+      - STONE_KEY=stone-api-key
     ports:
       - "8080:8080"
     depends_on:
